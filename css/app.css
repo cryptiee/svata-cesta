@@ -84,6 +84,8 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.15; let
   font-family: var(--text); font-size: 18px; line-height: 1.6;
 }
 .lead { font-size: 18.5px; }
+p.eyebrow, .welcome-card p.eyebrow, .event-card p.eyebrow { font-family: var(--sans); font-size: 12px; line-height: 1.4; margin: 0 0 6px; }
+.welcome-card p.eyebrow { color: var(--gold); }
 .figure figcaption, .calendar p, .st-text { font-size: 16px; line-height: 1.5; }
 
 /* ============ Top bar ============ */
@@ -248,11 +250,12 @@ main { padding-top: calc(var(--topbar-h) + env(safe-area-inset-top, 0px)); }
 
 /* Welcome */
 .welcome {
-  position: absolute; inset: 0; z-index: 700; display: grid; place-items: end center;
+  position: absolute; inset: 0; z-index: 900; display: flex; flex-direction: column; align-items: center; overflow-y: auto;
   background: linear-gradient(to top, color-mix(in srgb, var(--bg) 92%, transparent) 30%, transparent);
   padding: 16px;
 }
 .welcome-card {
+  margin-top: auto; flex: none;
   width: 100%; max-width: 520px; background: var(--card); border: 1px solid var(--line);
   border-radius: 22px; box-shadow: var(--shadow); padding: 24px 22px 20px;
   animation: rise .35s ease-out;
@@ -487,8 +490,8 @@ main { padding-top: calc(var(--topbar-h) + env(safe-area-inset-top, 0px)); }
   @keyframes slidein { from { transform: translateX(30px); opacity: 0; } }
   .sheet-backdrop { background: transparent; }
   .view-map ~ .sheet-backdrop { display: none; }
-  .welcome { place-items: center; background: color-mix(in srgb, var(--bg) 55%, transparent); }
-  .welcome-card { padding: 32px; }
+  .welcome { justify-content: center; background: color-mix(in srgb, var(--bg) 55%, transparent); }
+  .welcome-card { padding: 32px; margin: auto 0; }
   .welcome-card h1 { font-size: 40px; }
   .progress-card { right: auto; width: 380px; }
   .toast { bottom: 24px; }
