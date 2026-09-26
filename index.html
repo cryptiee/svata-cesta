@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Svatá cesta · Praha → Stará Boleslav</title>
+<meta name="description" content="Průvodce poutníka po Svaté cestě (Via Sancta) z Prahy do Staré Boleslavi: mapa 44 barokních kaplí, navigace, modlitby, historie a praktické informace.">
+<meta name="theme-color" content="#7a1f2b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1411" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="Svatá cesta · Praha → Stará Boleslav">
+<meta property="og:description" content="Mapa 44 barokních kaplí, navigace, modlitby a historie pro poutníky.">
+<meta property="og:image" content="img/og.jpg">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a href="#mapa" class="brand" aria-label="Svatá cesta – úvod">
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><use href="#i-chapel"/></svg>
+    <span class="brand-text">
+      <strong>Svatá cesta</strong>
+      <small>Praha → Stará Boleslav</small>
+    </span>
+  </a>
+  <nav class="topnav" aria-label="Hlavní navigace"></nav>
+</header>
+
+<main>
+  <!-- MAPA -->
+  <section id="view-mapa" class="view view-map" data-title="Mapa">
+    <div id="map" role="application" aria-label="Mapa poutní cesty"></div>
+
+    <div class="map-top">
+      <div id="event-pill" class="event-pill" hidden></div>
+    </div>
+
+    <div class="map-controls">
+      <button class="fab" id="btn-locate" title="Kde jsem?" aria-label="Zobrazit mou polohu">
+        <svg viewBox="0 0 24 24"><use href="#i-locate"/></svg>
+      </button>
+      <button class="fab" id="btn-layers" title="Vrstvy mapy" aria-label="Vrstvy mapy">
+        <svg viewBox="0 0 24 24"><use href="#i-layers"/></svg>
+      </button>
+      <button class="fab" id="btn-fit" title="Celá trasa" aria-label="Zobrazit celou trasu">
+        <svg viewBox="0 0 24 24"><use href="#i-route"/></svg>
+      </button>
+    </div>
+
+    <div class="layers-menu" id="layers-menu" hidden>
+      <p class="menu-title">Podklad</p>
+      <label><input type="radio" name="base" value="osm" checked> Základní (OpenStreetMap)</label>
+      <label><input type="radio" name="base" value="topo"> Topografická</label>
+      <label><input type="radio" name="base" value="sat"> Letecká</label>
+      <p class="menu-title">Zobrazit</p>
+      <label><input type="checkbox" id="chk-lost" checked> Zaniklé kaple</label>
+      <label><input type="checkbox" id="chk-hist"> Historická stopa (spojnice kaplí)</label>
+      <div class="legend">
+        <span><i class="dot dot-stoji"></i> stojí</span>
+        <span><i class="dot dot-replika"></i> replika</span>
+        <span><i class="dot dot-zanikla"></i> zaniklá</span>
+      </div>
+    </div>
+
+    <div class="progress-card" id="progress-card" hidden>
+      <div class="pc-row">
+        <div>
+          <div class="pc-label">Další zastavení</div>
+          <button class="pc-next" id="pc-next"></button>
+        </div>
+        <div class="pc-dist" id="pc-dist"></div>
+      </div>
+      <div class="pc-bar"><span id="pc-bar"></span></div>
+      <div class="pc-foot"><span id="pc-done"></span><span id="pc-left"></span></div>
+    </div>
+
+    <div class="welcome" id="welcome" hidden>
+      <div class="welcome-card">
+        <p class="eyebrow">Via Sancta · od roku 1674</p>
+        <h1>Svatá cesta z Prahy do Staré Boleslavi</h1>
+        <p>26 kilometrů po stopách poutníků, kteří tudy šli k Palladiu země české a k hrobu svatého Václava. Podél cesty stálo 44 barokních kaplí – 17 z nich stojí dodnes.</p>
+        <div class="stats">
+          <div><strong>26</strong><span>km</span></div>
+          <div><strong>44</strong><span>zastavení</span></div>
+          <div><strong>≈ 6½</strong><span>hodin chůze</span></div>
+        </div>
+        <div class="welcome-actions">
+          <button class="btn btn-primary" id="welcome-go">Otevřít mapu</button>
+          <a class="btn btn-ghost" href="#info">Jak se připravit</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KAPLE -->
+  <section id="view-kaple" class="view view-page" data-title="Kaple" hidden>
+    <div class="page">
+      <header class="page-head">
+        <p class="eyebrow">44 zastavení</p>
+        <h2>Kaple Svaté cesty</h2>
+        <p class="lead">Kaple jsou směrem od Prahy řazeny abecedně podle mariánských poutních míst, jimž byly zasvěceny, a zároveň podle 44 invokací loretánské litanie.</p>
+      </header>
+      <div class="visited-summary" id="visited-summary"></div>
+      <div class="chips" role="tablist" aria-label="Filtr kaplí">
+        <button class="chip is-on" data-filter="all">Všechny</button>
+        <button class="chip" data-filter="stoji">Stojící</button>
+        <button class="chip" data-filter="replika">Repliky</button>
+        <button class="chip" data-filter="zanikla">Zaniklé</button>
+      </div>
+      <ol class="chapel-list" id="chapel-list"></ol>
+    </div>
+  </section>
+
+  <!-- MODLITBY -->
+  <section id="view-modlitby" class="view view-page" data-title="Modlitby" hidden>
+    <div class="page">
+      <header class="page-head">
+        <p class="eyebrow">Na cestu</p>
+        <h2>Modlitby</h2>
+        <p class="lead" id="pray-howto"></p>
+      </header>
+      <div id="prayer-list" class="prayer-list"></div>
+      <details class="prayer litany" id="litany">
+        <summary><span class="p-title">Loretánská litanie</span><span class="p-when">44 invokací = 44 kaplí</span></summary>
+        <div class="p-body">
+          <p class="litany-intro">Pane, smiluj se. – Kriste, smiluj se. – Pane, smiluj se.<br>Kriste, uslyš nás. – Kriste, vyslyš nás.<br>Otče z nebes, Bože, – smiluj se nad námi.<br>Synu, Vykupiteli světa, Bože, – smiluj se nad námi.<br>Duchu Svatý, Bože, – smiluj se nad námi.<br>Svatá Trojice, jeden Bože, – smiluj se nad námi.</p>
+          <ol class="litany-list" id="litany-list"></ol>
+          <p class="litany-intro">Beránku Boží, jenž snímáš hříchy světa, – odpusť nám, Pane.<br>Beránku Boží, jenž snímáš hříchy světa, – vyslyš nás, Pane.<br>Beránku Boží, jenž snímáš hříchy světa, – smiluj se nad námi.</p>
+          <p class="note">Litanie je zde uvedena ve znění ze 17. století, tedy s invokacemi, které znali stavitelé Svaté cesty. Novější invokace (např. Matko dobré rady, Královno míru) byly přidány později.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- HISTORIE -->
+  <section id="view-historie" class="view view-page" data-title="Historie" hidden>
+    <article class="page prose">
+      <header class="page-head">
+        <p class="eyebrow">Tisíc let putování</p>
+        <h2>Příběh Svaté cesty</h2>
+      </header>
+
+      <h3>Svatý Václav a Boleslav</h3>
+      <p>Po staré zemské stezce z Prahy na severovýchod jezdil do Boleslavi už kníže Václav. Právě tam, u kostela sv. Kosmy a Damiána, byl 28. září 935 (podle jiných výpočtů 929) zavražděn družinou svého bratra Boleslava. O tři roky později bylo jeho tělo převezeno do Prahy do rotundy sv. Víta – podle tradice právě touto cestou. Na Proseku, kde průvod odpočíval, později vyrostl jeden z nejstarších pražských kostelů, zasvěcený sv. Václavovi.</p>
+      <p>Na místo Václavovy smrti se začalo putovat velmi brzy. V roce 1351 sem se svým arcibiskupem Arnoštem z Pardubic putoval i Karel IV. a založil nadaci, aby se zde každý den zpívala mše ke cti světce.</p>
+
+      <figure class="figure">
+        <img src="img/palladium.jpg" alt="Palladium země české – kovový reliéf Panny Marie s Ježíškem" loading="lazy">
+        <figcaption>Palladium země české. <span class="credit" data-photo="palladium"></span></figcaption>
+      </figure>
+
+      <h3>Palladium země české</h3>
+      <p>Druhým důvodem poutí je malý kovový reliéf Panny Marie s dítětem, kterému se od roku 1609 říká <em>Palladium země české</em> – ochranný obraz země. Podle legendy ho nosil na krku sv. Václav, jeho sluha Podiven jej po vraždě ukryl a kolem roku 1160 ho na poli nalezl rolník. Dnešní reliéf pochází z 15. století.</p>
+      <p>Palladium mělo pohnuté osudy: za saského vpádu počátkem 30. let 17. století bylo uloupeno a země ho musela draze vykoupit penězi z veřejné sbírky. Jeho návrat do Staré Boleslavi v roce 1638 – procesím z Hradčan za účasti císaře Ferdinanda III. a jeho dvora – patřil k největším slavnostem barokní Prahy. Od té doby se k němu každoročně putovalo – hlavně k 15. srpnu, na svátek Nanebevzetí Panny Marie.</p>
+
+      <h3>Jezuité a 44 kaplí</h3>
+      <p>V roce 1674 se jezuité rozhodli pouť na staré cestě „ozdobit“. Podél ní dali postavit 44 výklenkových kaplí – stejně, jako má loretánská litanie 44 invokací. Podle dobového záznamu se 13. září 1676 „začalo dělat Boží muka na Špitálsku“ a pražský arcibiskup Jan Bedřich z Valdštejna je posvětil; celá cesta byla hotová nejspíš v roce 1679. Každou kapli zaplatil jiný donátor – nejvyšší úředníci království, šlechtici, biskupové a opati. Jejich jména a erby byly namalovány na průčelí.</p>
+      <p>Kaple stojí po levé straně cesty zhruba 500 metrů od sebe. Jezuita Jan Tanner, který o cestě v roce 1679 vydal knihu (česky znovu 1692) <em>Svatá cesta z Prahy do Staré Boleslavě</em>, to popsal krásně prostě: každé zastavení je od druhého vzdáleno „délky mostu Pražského“.</p>
+
+      <figure class="figure">
+        <img src="img/26b.jpg" alt="Nápis Rosa Mystica na klenbě Pakenské kaple ve Vinoři" loading="lazy">
+        <figcaption>Nápis „Rosa Mystica“ na klenbě kaple č. 26 ve Vinoři – jediný zbytek původní výmalby. <span class="credit" data-photo="26b"></span></figcaption>
+      </figure>
+
+      <h3>Jak kaple vypadaly</h3>
+      <p>Každá kaple je výklenek mezi dvěma pilastry, zakončený trojúhelníkovým štítem, obvykle s kulatým slepým okénkem. Uvnitř byla freska: nahoře obraz Panny Marie z některého českého či moravského poutního místa – podle něj kaple dostala jméno – a dole výjev ze života sv. Václava. Na bočních stěnách byla česky napsaná modlitba k Panně Marii a popis václavského výjevu. Kaple jsou seřazeny abecedně podle poutních míst: od Aitlické (Údlice) až po Zbraslavskou.</p>
+      <p>První a poslední kaple jsou výjimkou – obě byly zasvěceny přímo staroboleslavskému Palladiu a poslední nesla idealizovaný rodokmen sv. Václava až k tehdejšímu císaři Leopoldu I.</p>
+
+      <figure class="figure">
+        <img src="img/libenveduta.jpg" alt="Pohled na Libeň z počátku 19. století" loading="lazy">
+        <figcaption>Pohled na Libeň kolem roku 1803 – cesta vedla podél Vltavy ze Špitálska (Karlína) do Libně. <span class="credit" data-photo="libenveduta"></span></figcaption>
+      </figure>
+
+      <h3>Úpadek a obnova</h3>
+      <p>Od konce 18. století se cesty napřimovaly a stará stezka byla na mnoha místech rozorána – proto dnes některé kaple stojí osamoceně v polích. V 19. a 20. století padly další kaple železnicím, továrnám, letišti a sídlištím. V roce 1935 jich ještě stálo 29, dnes zbývá 17 původních.</p>
+      <p>Od 90. let se kaple opravují – o většinu pečují městské části a obce, kterými cesta prochází. Kbely postavily v letech 2018–2024 čtyři repliky zaniklých kaplí, spolek Via Sancta Mariana od roku 2019 vztyčuje na místech chybějících kaplí dřevěné kříže. Národní svatováclavská pouť se po padesátileté přestávce koná znovu od roku 2003.</p>
+
+      <h3>Cíl cesty</h3>
+      <figure class="figure">
+        <img src="img/bazilika.jpg" alt="Bazilika sv. Václava ve Staré Boleslavi" loading="lazy">
+        <figcaption>Bazilika sv. Václava ve Staré Boleslavi. <span class="credit" data-photo="bazilika"></span></figcaption>
+      </figure>
+      <p>Ve Staré Boleslavi stojí vedle sebe dvě baziliky. <strong>Bazilika sv. Václava</strong> stojí na místě jeho mučednické smrti; v románské kryptě sv. Kosmy a Damiána podle tradice Václav zemřel. <strong>Bazilika Nanebevzetí Panny Marie</strong> je domovem Palladia. Nedaleko je ještě kaple blahoslaveného Podivena a románský kostel sv. Klimenta.</p>
+    </article>
+  </section>
+
+  <!-- INFO -->
+  <section id="view-info" class="view view-page" data-title="Info" hidden>
+    <div class="page prose">
+      <div id="special-events"></div>
+
+      <header class="page-head">
+        <p class="eyebrow">Praktické informace</p>
+        <h2>Na pouť</h2>
+      </header>
+
+      <div class="facts">
+        <div><strong>≈ 26 km</strong><span>od Poříčské brány k bazilikám</span></div>
+        <div><strong>6–7 h</strong><span>chůze včetně zastávek</span></div>
+        <div><strong>17 + 5</strong><span>stojících kaplí + replik</span></div>
+      </div>
+
+      <h3>Úseky cesty</h3>
+      <ol class="stages" id="stages"></ol>
+
+      <h3>Tipy na cestu</h3>
+      <ul class="tips">
+        <li><strong>Zkrácená pouť:</strong> nejhezčí část začíná u metra C Letňany (km 8) – odtud je to do Staré Boleslavi asi 18 km polní krajinou a vesnicemi. Kratší varianta: z Vinoře (km 15, autobus i vlak Praha-Kbely) zbývá asi 11 km.</li>
+        <li><strong>Úsek Vinoř – Brandýs</strong> vede z velké části podél silnice. Jděte proti směru jízdy a za šera mějte reflexní prvky.</li>
+        <li><strong>Voda a jídlo:</strong> obchody a hospody najdete hlavně v Kbelích, ve Vinoři a v Brandýse. V polních úsecích nic není – vezměte si vodu.</li>
+        <li><strong>Zpět do Prahy:</strong> ze Staré Boleslavi a Brandýsa jezdí autobusy PID do Prahy (např. na Černý Most či do Letňan). Aktuální spoje hledejte na <a href="https://pid.cz" target="_blank" rel="noopener">pid.cz</a> nebo <a href="https://idos.cz" target="_blank" rel="noopener">idos.cz</a>.</li>
+        <li><strong>Offline:</strong> tuto stránku si můžete přidat na plochu telefonu („Přidat na plochu“). Texty, modlitby a fotografie pak fungují i bez signálu; mapa se uloží pro oblasti, které si jednou prohlédnete.</li>
+        <li><strong>Navštívené kaple</strong> si můžete odškrtávat – ukládají se jen ve vašem telefonu.</li>
+      </ul>
+
+      <h3>Kalendář poutí</h3>
+      <p>Svatou cestu můžete jít kdykoli během roku – sami, s rodinou nebo s farností. Tyto dny ale mají zvláštní význam:</p>
+      <ul class="calendar" id="calendar"></ul>
+
+      <h3>Další zdroje</h3>
+      <ul class="links">
+        <li><a href="https://svata-cesta.cz/" target="_blank" rel="noopener">svata-cesta.cz</a> – podrobný výzkum polohy a historie každé kaple, Tannerovy modlitby, cyklopouť 28. 9.</li>
+        <li><a href="https://via-sancta.cz/" target="_blank" rel="noopener">via-sancta.cz</a> – texty a historické mapy ke kaplím</li>
+        <li><a href="https://cs.wikipedia.org/wiki/Poutn%C3%AD_cesta_z_Prahy_do_Star%C3%A9_Boleslavi" target="_blank" rel="noopener">Wikipedie: Poutní cesta z Prahy do Staré Boleslavi</a></li>
+        <li><a href="https://www.staraboleslav.com/" target="_blank" rel="noopener">staraboleslav.com</a> – poutní místo Stará Boleslav, bohoslužby a program poutí</li>
+        <li><a href="https://historie.praha19.cz/svata-cesta/" target="_blank" rel="noopener">Kbely a jejich historie</a> – kbelský úsek a repliky kaplí</li>
+      </ul>
+
+      <h3>O této stránce</h3>
+      <p class="small">Nekomerční průvodce pro poutníky. Údaje o kaplích vycházejí z článku Wikipedie <em>Poutní cesta z Prahy do Staré Boleslavi</em> (CC BY-SA 4.0) a z dat OpenStreetMap; texty jsou napsány vlastními slovy. Polohy zaniklých kaplí jsou pravděpodobné, ne jisté. Pěší trasa je vypočtena službou OSRM nad daty © přispěvatelé OpenStreetMap (ODbL). Fotografie pocházejí z Wikimedia Commons, autoři a licence jsou uvedeni u každé z nich. Našli jste chybu? <a href="https://github.com/cryptiee/svata-cesta/issues" target="_blank" rel="noopener">Napište nám</a>.</p>
+      <ul class="photo-credits small" id="photo-credits"></ul>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar" aria-label="Navigace">
+  <a href="#mapa" data-view="mapa"><svg viewBox="0 0 24 24"><use href="#i-map"/></svg><span>Mapa</span></a>
+  <a href="#kaple" data-view="kaple"><svg viewBox="0 0 24 24"><use href="#i-list"/></svg><span>Kaple</span></a>
+  <a href="#modlitby" data-view="modlitby"><svg viewBox="0 0 24 24"><use href="#i-pray"/></svg><span>Modlitby</span></a>
+  <a href="#historie" data-view="historie"><svg viewBox="0 0 24 24"><use href="#i-book"/></svg><span>Historie</span></a>
+  <a href="#info" data-view="info"><svg viewBox="0 0 24 24"><use href="#i-info"/></svg><span>Info</span></a>
+</nav>
+
+<!-- Detail kaple -->
+<div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+<aside class="sheet" id="sheet" aria-modal="true" role="dialog" aria-labelledby="sheet-title" hidden>
+  <div class="sheet-grip" aria-hidden="true"></div>
+  <button class="sheet-close" id="sheet-close" aria-label="Zavřít">
+    <svg viewBox="0 0 24 24"><use href="#i-close"/></svg>
+  </button>
+  <div class="sheet-body" id="sheet-body"></div>
+</aside>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Ikony -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-chapel" viewBox="0 0 32 32"><path d="M16 3 4 12v17h24V12L16 3Z" fill="currentColor"/><path d="M11 29V19a5 5 0 0 1 10 0v10" fill="var(--chapel-niche, #fff)" opacity=".92"/><circle cx="16" cy="10.5" r="1.8" fill="var(--chapel-niche, #fff)" opacity=".92"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Zm0 0v14m6-12v14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="4.5" cy="6" r="1.5" fill="currentColor"/><circle cx="4.5" cy="12" r="1.5" fill="currentColor"/><circle cx="4.5" cy="18" r="1.5" fill="currentColor"/></symbol>
+  <symbol id="i-pray" viewBox="0 0 24 24"><path d="M12 2v6M9 5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 21V12l7-3 7 3v9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 21v-4a2 2 0 0 1 4 0v4" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Zm0 15A2.5 2.5 0 0 0 6.5 23H20v-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.6" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="i-locate" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="5" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 19h7.5a3.5 3.5 0 0 0 0-7h-7a3.5 3.5 0 0 1 0-7H16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-nav" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

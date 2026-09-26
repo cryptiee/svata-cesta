@@ -1,0 +1,58 @@
+{
+  "recurring": [
+    {
+      "date": "31. 12. / 1. 1.",
+      "title": "Novoroční pouť",
+      "text": "Pěší putování z Prahy do Staré Boleslavi na přelomu roku. Od roku 2019 ji pořádá spolek Via Sancta Mariana, který podél cesty vztyčil očíslované dřevěné kříže na místech zaniklých kaplí."
+    },
+    {
+      "date": "4. 3.",
+      "title": "Přenesení ostatků sv. Václava",
+      "text": "Památka dne, kdy bylo tělo sv. Václava (roku 938) přeneseno ze Staré Boleslavi do rotundy sv. Víta v Praze. Dobrá příležitost jít cestu „opačným směrem“ než obvykle."
+    },
+    {
+      "date": "15. 8.",
+      "title": "Nanebevzetí Panny Marie – mariánská pouť",
+      "text": "Hlavní svátek baziliky Nanebevzetí Panny Marie a Palladia země české. Právě kvůli této pouti postavili jezuité v 17. století Svatou cestu se 44 kaplemi."
+    },
+    {
+      "date": "28. 9.",
+      "title": "Národní svatováclavská pouť",
+      "text": "Slavnost sv. Václava, patrona české země, v místě jeho mučednické smrti. Poutní mši obvykle slouží pražský arcibiskup a z Pražského hradu přijíždějí ostatky sv. Václava. Z Prahy vyráží také pěší poutníci a cyklopouť."
+    }
+  ],
+  "special": [
+    {
+      "id": "nsp2026",
+      "showFrom": "2026-08-01",
+      "showUntil": "2026-09-28T23:59:00+02:00",
+      "title": "Národní svatováclavská pouť 2026",
+      "subtitle": "26.–28. září 2026 · Stará Boleslav",
+      "source": "https://www.staraboleslav.com/narodni-svatovaclavska-pout/",
+      "days": [
+        {
+          "day": "Neděle 27. 9.",
+          "items": [
+            ["19.00", "Příjezd relikvie sv. Václava před baziliku sv. Václava; Svatováclavský koncert a nešpory v bazilice"]
+          ]
+        },
+        {
+          "day": "Pondělí 28. 9.",
+          "items": [
+            ["7.00", "Ranní chvály – bazilika sv. Václava"],
+            ["7.30, 8.30", "Mše svatá – bazilika sv. Václava"],
+            ["9.15", "Modlitba růžence – Mariánské náměstí"],
+            ["10.00", "Poutní mše svatá – Mariánské náměstí; hlavní celebrant Mons. Stanislav Přibyl, arcibiskup pražský", true],
+            ["9.30–16.30", "Možnost uctít relikvie sv. Václava v bazilice"],
+            ["14.00", "Modlitba chval s požehnáním – bazilika Nanebevzetí Panny Marie"],
+            ["14.00", "Modlitba za národ před Palladiem země české v kostele sv. Klimenta, poté do 16.00 možnost zhlédnout Palladium"],
+            ["17.00", "Odjezd relikvie sv. Václava na Pražský hrad"],
+            ["18.00", "Řeckokatolická liturgie – bazilika sv. Václava"],
+            ["18.00", "Svatováclavský koncert (Far Musica) – bazilika Nanebevzetí Panny Marie"]
+          ]
+        }
+      ],
+      "note": "Doprovodný kulturní program na Mariánském náměstí, v Houštce a v děkanské zahradě (od 12.00, program pro děti). Změny vyhrazeny – ověřte na staraboleslav.com. Na 10.00 na Mariánské náměstí dojdete z Prahy pěšky, pokud vyrazíte od Poříčské brány kolem 3.30–4.00, od metra Letňany kolem 5.30."
+    }
+  ]
+}
