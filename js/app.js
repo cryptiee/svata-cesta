@@ -9,7 +9,8 @@ const STATUS_LABEL = { stoji: "stojí", replika: "replika", zanikla: "zaniklá" 
 const MODE_LABEL = { pesky: "pěšky", kolo: "na kole" };
 const START = { lat: 50.09079, lon: 14.437006 };
 const POIS = [
-  { kind: "start", lat: START.lat, lon: START.lon, title: "Poříčská brána", text: "Historický začátek Svaté cesty. Brána stála v místech dnešního náměstí Republiky (u ulice Na Poříčí). Poutníci sem přicházeli z katedrály sv. Víta, z Lorety nebo od sv. Jakuba." },
+  { kind: "start", lat: START.lat, lon: START.lon, title: "Poříčská brána", text: "Historický začátek Svaté cesty. Brána stála v místech dnešního náměstí Republiky (u ulice Na Poříčí). Poutníci sem přicházeli z katedrály sv. Víta, z Lorety nebo od sv. Jakuba.",
+    mass: [["sv. Petr na Poříčí", "sv-petra-na-porici"], ["sv. Josef (nám. Republiky)", "sv-josefa-nove-mesto"], ["sv. Jakub, odkud vedli poutě jezuité", "sv-jakuba-starsiho-stare-mesto"]] },
   { kind: "end", lat: 50.194591, lon: 14.67228, title: "Bazilika sv. Václava", text: "Místo mučednické smrti sv. Václava (28. 9. 935). Pod kostelem je románská krypta sv. Kosmy a Damiána. Hned vedle stojí románský kostel sv. Klimenta." },
   { kind: "end", lat: 50.196034, lon: 14.676585, title: "Bazilika Nanebevzetí Panny Marie", text: "Raně barokní poutní chrám z let 1613–1623, domov Palladia země české – cíl mariánských poutí a Svaté cesty." },
   { kind: "end", lat: 50.197362, lon: 14.678337, title: "Kaple bl. Podivena", text: "Kaple připomíná Podivena, věrného sluhu sv. Václava, který podle legendy ukryl Palladium." },
@@ -135,6 +136,13 @@ function showView(v) {
   if (v === "trasy") renderRoutes();
 }
 
+/* ============ Mše v Praze (sesterský web) ============ */
+const MSE = "https://www.msevpraze.cz";
+function massHTML(list) {
+  return `<div class="pop-mass"><b>Začněte pouť mší svatou</b>${list.map(([name, slug]) =>
+    `<a href="${MSE}/kostely/${slug}" target="_blank" rel="noopener">${esc(name)}</a>`).join("")}<small>časy bohoslužeb na msevpraze.cz</small></div>`;
+}
+
 /* ============ Mapa ============ */
 function isDark() {
   const t = document.documentElement.dataset.theme;
@@ -181,7 +189,7 @@ function initMap() {
   POIS.forEach((p) => {
     const icon = L.divIcon({ className: "", html: `<div class="mk-poi ${p.kind === "start" ? "mk-start" : ""}"><svg viewBox="0 0 32 32"><use href="#i-chapel"/></svg></div>`, iconSize: [34, 34], iconAnchor: [17, 17] });
     L.marker([p.lat, p.lon], { icon, title: p.title, zIndexOffset: 800 })
-      .bindPopup(`<strong style="font-family:var(--serif);font-size:18px">${esc(p.title)}</strong><br><span style="font-size:13.5px">${esc(p.text)}</span>`)
+      .bindPopup(`<strong class="pop-title">${esc(p.title)}</strong><span class="pop-text">${esc(p.text)}</span>${p.mass ? massHTML(p.mass) : ""}`)
       .addTo(map);
   });
 
@@ -487,7 +495,7 @@ function renderRoutes() {
       <p class="rc-text">${esc(r.text)}</p>
       <ul class="rc-hl">${r.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>
       <dl class="rc-where">
-        <div><dt>Start</dt><dd>${esc(r.start.name)} · ${esc(r.start.transport)}</dd></div>
+        <div><dt>Start</dt><dd>${esc(r.start.name)} · ${esc(r.start.transport)}${r.id === "cela" || r.id === "kolo" ? ` · <a href="${MSE}/kostely/sv-petra-na-porici" target="_blank" rel="noopener">mše u sv. Petra na Poříčí</a>` : ""}</dd></div>
         <div><dt>Cíl</dt><dd>${esc(r.end.name)}</dd></div>
         <div><dt>Kaple</dt><dd>${r.chapels.length} zastavení, z toho ${standing} stojících kaplí a replik</dd></div>
       </dl>
@@ -570,6 +578,11 @@ function openChapel(n, keepScroll = false) {
       <div><dt>Mariánský obraz</dt><dd>${esc(c.image)}</dd></div>
       <div><dt>Donátor</dt><dd>${esc(c.donor)}</dd></div>
     </dl>
+    ${c.church ? `<a class="d-church" href="${c.church.url}" target="_blank" rel="noopener">
+      <span class="dc-label">Originál najdete v Praze</span>
+      <span class="dc-name">${esc(c.church.name)}</span>
+      <span class="dc-cta">Časy mší na msevpraze.cz ›</span>
+    </a>` : ""}
     <div class="d-links">
       <a href="${mapyUrl}" target="_blank" rel="noopener">Mapy.cz</a>
       <a href="${gUrl}" target="_blank" rel="noopener">Google Maps</a>
