@@ -1,6 +1,6 @@
 /* Service worker – offline průvodce.
    Aplikace a data: stale-while-revalidate. Mapové dlaždice: cache při prohlížení (omezený počet). */
-const VERSION = "v2";
+const VERSION = "v3";
 const APP = `svata-cesta-app-${VERSION}`;
 const TILES = "svata-cesta-tiles";
 const MAX_TILES = 1500;

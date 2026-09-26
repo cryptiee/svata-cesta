@@ -20,9 +20,9 @@
   --tabbar-h: 64px;
   --safe-b: env(safe-area-inset-bottom, 0px);
   /* display = nadpisy, text = čtení a modlitby, sans = ovládání */
-  --serif: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
-  --text: Literata, "Iowan Old Style", Georgia, serif;
-  --sans: Figtree, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif: "EB Garamond", Garamond, "Iowan Old Style", Georgia, serif;
+  --text: "EB Garamond", Garamond, "Iowan Old Style", Georgia, serif;
+  --sans: "Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --chapel-niche: var(--bg);
   color-scheme: light;
 }
@@ -81,10 +81,10 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.15; let
 
 /* Delší texty v knižním písmu */
 .prose p, .prose li, .lead, .d-section p, .welcome-card p, .calendar p, .st-text, .figure figcaption {
-  font-family: var(--text); font-size: 16px; line-height: 1.7;
+  font-family: var(--text); font-size: 18px; line-height: 1.6;
 }
-.lead { font-size: 16.5px; }
-.figure figcaption, .calendar p, .st-text { font-size: 14.5px; line-height: 1.6; }
+.lead { font-size: 18.5px; }
+.figure figcaption, .calendar p, .st-text { font-size: 16px; line-height: 1.5; }
 
 /* ============ Top bar ============ */
 .topbar {
@@ -392,12 +392,12 @@ main { padding-top: calc(var(--topbar-h) + env(safe-area-inset-top, 0px)); }
 .p-title { font-family: var(--serif); font-size: 22px; font-weight: 700; }
 .p-when { font-size: 13px; color: var(--muted); }
 .p-body { padding: 0 16px 18px; }
-.p-text { font-family: var(--text); font-size: 17.5px; line-height: 1.75; white-space: pre-line; margin: 0; }
-.litany-intro { font-family: var(--text); font-size: 16px; line-height: 1.7; color: var(--ink-2); }
+.p-text { font-family: var(--text); font-size: 19.5px; line-height: 1.6; white-space: pre-line; margin: 0; }
+.litany-intro { font-family: var(--text); font-size: 18px; line-height: 1.6; color: var(--ink-2); }
 .litany-list { margin: 0 0 14px; padding: 0; list-style: none; counter-reset: l; }
 .litany-list li {
   counter-increment: l; display: grid; grid-template-columns: 34px 1fr; gap: 6px; align-items: baseline;
-  padding: 7px 0; border-bottom: 1px dashed var(--line); font-family: var(--text); font-size: 16.5px;
+  padding: 7px 0; border-bottom: 1px dashed var(--line); font-family: var(--text); font-size: 18px;
 }
 .litany-list li::before { content: counter(l) "."; color: var(--gold); font-size: 15px; font-weight: 600; text-align: right; }
 .litany-list button { background: none; border: 0; padding: 0; text-align: left; font: inherit; color: inherit; }
