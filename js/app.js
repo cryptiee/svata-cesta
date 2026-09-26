@@ -422,6 +422,10 @@ function openChapel(n, keepScroll = false) {
       <div class="inv-resp">– oroduj za nás</div>
       <div class="inv-hint">${n}. invokace loretánské litanie · Zdrávas Maria…</div>
     </div>
+    <div class="d-actions">
+      <button class="btn ${visited ? "btn-ok" : "btn-ghost"}" data-act="visit"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>${visited ? "Navštíveno" : "Byl/a jsem tu"}</button>
+      <a class="btn btn-primary" href="${mapyUrl}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><use href="#i-nav"/></svg>Navigovat</a>
+    </div>
     <div class="d-section"><p>${esc(c.text)}</p></div>
     ${c.photo2 && state.photos[c.photo2] ? `<figure class="d-photo2"><img src="${state.photos[c.photo2].src}" alt="" loading="lazy"><figcaption>Foto: ${esc(state.photos[c.photo2].author)}, <a href="${state.photos[c.photo2].page}" target="_blank" rel="noopener">${esc(state.photos[c.photo2].license)}</a></figcaption></figure>` : ""}
     <dl class="d-facts">
@@ -429,11 +433,10 @@ function openChapel(n, keepScroll = false) {
       <div><dt>Mariánský obraz</dt><dd>${esc(c.image)}</dd></div>
       <div><dt>Donátor</dt><dd>${esc(c.donor)}</dd></div>
     </dl>
-    <div class="d-actions">
-      <a class="btn btn-primary" href="${mapyUrl}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><use href="#i-nav"/></svg>Mapy.cz</a>
-      <a class="btn btn-soft" href="${gUrl}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><use href="#i-nav"/></svg>Google Maps</a>
-      <button class="btn ${visited ? "btn-ok" : "btn-ghost"}" data-act="visit"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>${visited ? "Navštíveno" : "Byl/a jsem tu"}</button>
-      ${$("#view-mapa").hidden ? `<button class="btn btn-ghost" data-act="map"><svg viewBox="0 0 24 24"><use href="#i-map"/></svg>Na mapě</button>` : `<button class="btn btn-ghost" data-act="share"><svg viewBox="0 0 24 24"><use href="#i-share"/></svg>Sdílet</button>`}
+    <div class="d-links">
+      <a href="${mapyUrl}" target="_blank" rel="noopener">Mapy.cz</a>
+      <a href="${gUrl}" target="_blank" rel="noopener">Google Maps</a>
+      ${$("#view-mapa").hidden ? `<button data-act="map">Ukázat na mapě</button>` : `<button data-act="share">Sdílet</button>`}
     </div>
     <div class="d-pager">
       ${prev ? `<button data-act="go" data-n="${prev.n}"><svg viewBox="0 0 24 24"><use href="#i-prev"/></svg><span>předchozí<b>${prev.n}. ${esc(prev.name)}</b></span></button>` : "<span></span>"}

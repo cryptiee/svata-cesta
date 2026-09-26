@@ -5,12 +5,12 @@
   --card: #fffdf8;
   --ink: #2a211d;
   --ink-2: #5b4f47;
-  --muted: #8a7d72;
+  --muted: #6e6257;
   --line: #e4d9c6;
   --accent: #7a1f2b;       /* svatováclavská purpurová */
   --accent-ink: #fff8ef;
   --accent-soft: #f3e2e1;
-  --gold: #a9812f;
+  --gold: #825e1c;
   --gold-soft: #f4ead3;
   --lost: #9a9087;
   --route: #7a1f2b;
@@ -19,8 +19,10 @@
   --topbar-h: 56px;
   --tabbar-h: 64px;
   --safe-b: env(safe-area-inset-bottom, 0px);
+  /* display = nadpisy, text = čtení a modlitby, sans = ovládání */
   --serif: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
-  --sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --text: Literata, "Iowan Old Style", Georgia, serif;
+  --sans: Figtree, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --chapel-niche: var(--bg);
   color-scheme: light;
 }
@@ -76,6 +78,13 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.15; let
 }
 .small { font-size: 14px; color: var(--ink-2); }
 .note { font-size: 14px; color: var(--muted); }
+
+/* Delší texty v knižním písmu */
+.prose p, .prose li, .lead, .d-section p, .welcome-card p, .calendar p, .st-text, .figure figcaption {
+  font-family: var(--text); font-size: 16px; line-height: 1.7;
+}
+.lead { font-size: 16.5px; }
+.figure figcaption, .calendar p, .st-text { font-size: 14.5px; line-height: 1.6; }
 
 /* ============ Top bar ============ */
 .topbar {
@@ -323,7 +332,7 @@ main { padding-top: calc(var(--topbar-h) + env(safe-area-inset-top, 0px)); }
 }
 .sheet-close svg { width: 20px; height: 20px; }
 .sheet-body { padding: 0 0 8px; }
-.d-photo { position: relative; margin: 12px 16px 0; border-radius: 16px; overflow: hidden; background: var(--bg-2); aspect-ratio: 4 / 3; }
+.d-photo { position: relative; margin: 12px 16px 0; border-radius: 16px; overflow: hidden; background: var(--bg-2); aspect-ratio: 16 / 9; }
 .d-photo img { width: 100%; height: 100%; object-fit: cover; }
 .d-photo .credit-overlay {
   position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 10px 6px; font-size: 11px; color: #fff;
@@ -344,7 +353,7 @@ main { padding-top: calc(var(--topbar-h) + env(safe-area-inset-top, 0px)); }
 .d-section { padding: 10px 20px; }
 .d-section p { margin: 0 0 10px; }
 .invocation {
-  margin: 12px 20px; padding: 16px 18px; border-radius: 16px;
+  margin: 10px 20px 12px; padding: 16px 18px; border-radius: 16px;
   background: linear-gradient(135deg, var(--gold-soft), var(--accent-soft));
   text-align: center;
 }
@@ -356,7 +365,9 @@ main { padding-top: calc(var(--topbar-h) + env(safe-area-inset-top, 0px)); }
 .d-facts div { display: grid; grid-template-columns: 110px 1fr; gap: 10px; font-size: 14.5px; }
 .d-facts dt { color: var(--muted); font-size: 13px; }
 .d-facts dd { margin: 0; }
-.d-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 8px 20px 4px; }
+.d-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px 6px; }
+.d-links { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 6px 20px 0; font-size: 14.5px; }
+.d-links a, .d-links button { background: none; border: 0; padding: 6px 0; color: var(--accent); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; min-height: 36px; }
 .d-actions .btn { width: 100%; }
 .d-actions .wide { grid-column: 1 / -1; }
 .d-pager { display: flex; justify-content: space-between; gap: 10px; padding: 14px 20px 0; border-top: 1px solid var(--line); margin-top: 14px; }
@@ -381,17 +392,17 @@ main { padding-top: calc(var(--topbar-h) + env(safe-area-inset-top, 0px)); }
 .p-title { font-family: var(--serif); font-size: 22px; font-weight: 700; }
 .p-when { font-size: 13px; color: var(--muted); }
 .p-body { padding: 0 16px 18px; }
-.p-text { font-family: var(--serif); font-size: 20px; line-height: 1.5; white-space: pre-line; margin: 0; }
-.litany-intro { font-family: var(--serif); font-size: 18px; line-height: 1.55; color: var(--ink-2); }
+.p-text { font-family: var(--text); font-size: 17.5px; line-height: 1.75; white-space: pre-line; margin: 0; }
+.litany-intro { font-family: var(--text); font-size: 16px; line-height: 1.7; color: var(--ink-2); }
 .litany-list { margin: 0 0 14px; padding: 0; list-style: none; counter-reset: l; }
 .litany-list li {
   counter-increment: l; display: grid; grid-template-columns: 34px 1fr; gap: 6px; align-items: baseline;
-  padding: 7px 0; border-bottom: 1px dashed var(--line); font-family: var(--serif); font-size: 19px;
+  padding: 7px 0; border-bottom: 1px dashed var(--line); font-family: var(--text); font-size: 16.5px;
 }
 .litany-list li::before { content: counter(l) "."; color: var(--gold); font-size: 15px; font-weight: 600; text-align: right; }
 .litany-list button { background: none; border: 0; padding: 0; text-align: left; font: inherit; color: inherit; }
 .litany-list small { display: block; font-family: var(--sans); font-size: 12.5px; color: var(--muted); }
-.litany-list em { color: var(--accent); font-style: normal; font-size: 15px; }
+.litany-list em { color: var(--accent); font-style: normal; font-size: 14.5px; font-family: var(--sans); font-weight: 500; }
 
 /* ============ Prose ============ */
 .prose h3 { font-size: 26px; margin: 30px 0 8px; }
