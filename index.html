@@ -38,6 +38,10 @@
     <div id="map" role="application" aria-label="Mapa poutní cesty"></div>
 
     <div class="map-top">
+      <div class="route-chip" id="route-chip" hidden>
+        <a href="#trasy">Trasa: <b id="route-chip-name"></b></a>
+        <button id="route-chip-reset" title="Zpět na celou trasu" aria-label="Zpět na celou Svatou cestu"><svg viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
+      </div>
       <div id="event-pill" class="event-pill" hidden></div>
     </div>
 
@@ -95,6 +99,24 @@
           <a class="btn btn-ghost" href="#info">Jak se připravit</a>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- TRASY -->
+  <section id="view-trasy" class="view view-page" data-title="Trasy" hidden>
+    <div class="page">
+      <header class="page-head">
+        <p class="eyebrow">Doporučené varianty</p>
+        <h2>Trasy</h2>
+        <p class="lead">Celou cestu nemusíte jít najednou. Vyberte si variantu podle času a sil – pěšky i na kole. Vybraná trasa se ukáže na mapě a „Kde jsem“ podle ní počítá další zastavení i zbývající kilometry.</p>
+      </header>
+      <div class="chips" id="route-chips" role="tablist" aria-label="Filtr tras">
+        <button class="chip is-on" data-mode="all">Všechny</button>
+        <button class="chip" data-mode="pesky">Pěšky</button>
+        <button class="chip" data-mode="kolo">Na kole</button>
+        <button class="chip" data-mode="snadne">Snadné</button>
+      </div>
+      <ol class="route-list" id="route-list"></ol>
     </div>
   </section>
 
@@ -211,7 +233,7 @@
 
       <h3>Tipy na cestu</h3>
       <ul class="tips">
-        <li><strong>Zkrácená pouť:</strong> nejhezčí část začíná u metra C Letňany (km 8) – odtud je to do Staré Boleslavi asi 18 km polní krajinou a vesnicemi. Kratší varianta: z Vinoře (km 15, autobus i vlak Praha-Kbely) zbývá asi 11 km.</li>
+        <li><strong>Zkrácená pouť:</strong> nejhezčí část začíná u metra C Letňany (km 8) – odtud je to do Staré Boleslavi asi 18 km polní krajinou a vesnicemi. Kratší varianta: z Vinoře (km 15, autobus i vlak Praha-Kbely) zbývá asi 11 km. <a href="#trasy">Všechny varianty tras ›</a></li>
         <li><strong>Úsek Vinoř – Brandýs</strong> vede z velké části podél silnice. Jděte proti směru jízdy a za šera mějte reflexní prvky.</li>
         <li><strong>Voda a jídlo:</strong> obchody a hospody najdete hlavně v Kbelích, ve Vinoři a v Brandýse. V polních úsecích nic není – vezměte si vodu.</li>
         <li><strong>Zpět do Prahy:</strong> ze Staré Boleslavi a Brandýsa jezdí autobusy PID do Prahy (např. na Černý Most či do Letňan). Aktuální spoje hledejte na <a href="https://pid.cz" target="_blank" rel="noopener">pid.cz</a> nebo <a href="https://idos.cz" target="_blank" rel="noopener">idos.cz</a>.</li>
@@ -241,6 +263,7 @@
 
 <nav class="tabbar" aria-label="Navigace">
   <a href="#mapa" data-view="mapa"><svg viewBox="0 0 24 24"><use href="#i-map"/></svg><span>Mapa</span></a>
+  <a href="#trasy" data-view="trasy"><svg viewBox="0 0 24 24"><use href="#i-routes"/></svg><span>Trasy</span></a>
   <a href="#kaple" data-view="kaple"><svg viewBox="0 0 24 24"><use href="#i-list"/></svg><span>Kaple</span></a>
   <a href="#modlitby" data-view="modlitby"><svg viewBox="0 0 24 24"><use href="#i-pray"/></svg><span>Modlitby</span></a>
   <a href="#historie" data-view="historie"><svg viewBox="0 0 24 24"><use href="#i-book"/></svg><span>Historie</span></a>
@@ -270,6 +293,7 @@
   <symbol id="i-locate" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
   <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="5" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 19h7.5a3.5 3.5 0 0 0 0-7h-7a3.5 3.5 0 0 1 0-7H16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-routes" viewBox="0 0 24 24"><path d="M3.5 21H12a2.75 2.75 0 0 0 0-5.5H7.5a2.75 2.75 0 0 1 0-5.5H10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 13s-3.8-3.4-3.8-6.3a3.8 3.8 0 0 1 7.6 0c0 2.9-3.8 6.3-3.8 6.3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="17" cy="6.7" r="1.3" fill="currentColor"/></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   <symbol id="i-nav" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>

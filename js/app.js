@@ -6,6 +6,7 @@ const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const STATUS_LABEL = { stoji: "stojí", replika: "replika", zanikla: "zaniklá" };
+const MODE_LABEL = { pesky: "pěšky", kolo: "na kole" };
 const START = { lat: 50.09079, lon: 14.437006 };
 const POIS = [
   { kind: "start", lat: START.lat, lon: START.lon, title: "Poříčská brána", text: "Historický začátek Svaté cesty. Brána stála v místech dnešního náměstí Republiky (u ulice Na Poříčí). Poutníci sem přicházeli z katedrály sv. Víta, z Lorety nebo od sv. Jakuba." },
@@ -29,8 +30,9 @@ const store = {
 
 const state = {
   chapels: [], byN: new Map(), route: null, prayers: null, events: null, photos: {},
+  routes: [], routeGeo: {}, routeId: "cela", routeFilter: "all", stops: [],
   visited: new Set(store.get("vs-visited", [])),
-  filter: "all", current: null, me: null, watchId: null, meKm: null,
+  filter: "all", current: null, me: null, watchId: null, meKm: null, lastPos: null,
 };
 
 /* ============ Geometrie ============ */
@@ -72,17 +74,20 @@ async function loadJSON(url) {
   return r.json();
 }
 async function init() {
-  const [chapels, route, prayers, events, photos] = await Promise.all([
+  const [chapels, route, prayers, events, photos, routes] = await Promise.all([
     loadJSON("data/chapels.json"), loadJSON("data/route.geojson"), loadJSON("data/prayers.json"),
-    loadJSON("data/events.json"), loadJSON("data/photos.json"),
+    loadJSON("data/events.json"), loadJSON("data/photos.json"), loadJSON("data/routes.json"),
   ]);
-  Object.assign(state, { chapels, route, prayers, events, photos });
+  Object.assign(state, { chapels, route, prayers, events, photos, routes });
   chapels.forEach((c) => state.byN.set(c.n, c));
   prepRoute(route.geometry.coordinates);
   state.totalKm = routeCum.at(-1) / 1000;
 
   initNav();
   initMap();
+  await setRoute(store.get("vs-route", "cela")).catch(() => setRoute("cela"));
+  if (state.routeId !== "cela") fitRoute(false);
+  initRoutes();
   renderList();
   renderPrayers();
   renderInfo();
@@ -94,7 +99,7 @@ async function init() {
 }
 
 /* ============ Navigace (views) ============ */
-const VIEWS = ["mapa", "kaple", "modlitby", "historie", "info"];
+const VIEWS = ["mapa", "trasy", "kaple", "modlitby", "historie", "info"];
 function initNav() {
   const top = $(".topnav");
   top.innerHTML = $$(".tabbar a").map((a) => `<a href="${a.getAttribute("href")}" data-view="${a.dataset.view}">${a.querySelector("span").textContent}</a>`).join("");
@@ -110,6 +115,13 @@ function route_() {
     return;
   }
   if (!$("#sheet").hidden) closeChapel();
+  const t = h.match(/^trasa-([\w-]+)$/);
+  if (t) {
+    history.replaceState(null, "", "#mapa");
+    selectRoute(t[1]);
+    state.routed = true;
+    return;
+  }
   showView(VIEWS.includes(h) ? h : "mapa");
   state.routed = true;
 }
@@ -120,6 +132,7 @@ function showView(v) {
   if (v === "mapa" && state.map) setTimeout(() => state.map.invalidateSize(), 0);
   if (v !== "mapa") window.scrollTo(0, 0);
   if (v === "kaple") renderList();
+  if (v === "trasy") renderRoutes();
 }
 
 /* ============ Mapa ============ */
@@ -156,7 +169,7 @@ function initMap() {
   // Trasa
   const latlngs = state.route.geometry.coordinates.map(([lon, lat]) => [lat, lon]);
   const css = getComputedStyle(document.documentElement);
-  L.polyline(latlngs, { color: "#fff", weight: 9, opacity: isDark() ? 0.15 : 0.9, interactive: false }).addTo(map);
+  state.routeCasing = L.polyline(latlngs, { color: "#fff", weight: 9, opacity: isDark() ? 0.15 : 0.9, interactive: false }).addTo(map);
   state.routeLine = L.polyline(latlngs, { color: css.getPropertyValue("--route").trim() || "#7a1f2b", weight: 5, opacity: 0.85, interactive: false }).addTo(map);
 
   // Historická stopa – spojnice původních poloh
@@ -210,7 +223,7 @@ function initMap() {
   $("#pc-next").addEventListener("click", () => state.nextN && (focusChapel(state.nextN), openChapel(state.nextN)));
 
   // Uvítání
-  if (!store.get("vs-welcomed", false) && !location.hash.startsWith("#k")) {
+  if (!store.get("vs-welcomed", false) && !location.hash.startsWith("#k") && !location.hash.startsWith("#trasa-")) {
     $("#welcome").hidden = false;
     $("#welcome-go").addEventListener("click", closeWelcome);
     $("#welcome a").addEventListener("click", closeWelcome);
@@ -258,7 +271,7 @@ function toggleLocate() {
     state.meCircle && state.map.removeLayer(state.meCircle);
     state.meMarker = state.meCircle = null;
     $("#progress-card").hidden = true;
-    state.me = null;
+    state.me = state.lastPos = null;
     renderList();
     return;
   }
@@ -284,6 +297,7 @@ function toggleLocate() {
 function onPosition(pos, first) {
   const { latitude: lat, longitude: lon, accuracy } = pos.coords;
   state.me = { lat, lon };
+  state.lastPos = pos;
   const ll = [lat, lon];
   if (!state.meMarker) {
     state.meCircle = L.circle(ll, { radius: accuracy, color: "#2f7cf6", weight: 1, fillOpacity: 0.08, interactive: false }).addTo(state.map);
@@ -297,16 +311,16 @@ function onPosition(pos, first) {
   state.meKm = onRoute ? proj.along / 1000 : null;
   if (first) state.map.setView(ll, onRoute ? 16 : Math.min(state.map.getZoom(), 13));
 
-  // Další kaple
-  let next;
-  if (onRoute) next = state.chapels.find((c) => c.km > state.meKm + 0.02) || null;
+  // Další kaple (state.stops = kaple na aktivní trase a jejich km podél ní)
+  let next, nextKm;
+  if (onRoute) ({ c: next, km: nextKm } = state.stops.find((s) => s.km > state.meKm + 0.02) || { c: null });
   else next = [...state.chapels].sort((a, b) => haversine(state.me, a) - haversine(state.me, b))[0];
   state.nextN = next?.n;
   const card = $("#progress-card");
   card.hidden = false;
   if (next) {
     $("#pc-next").textContent = `${next.n}. ${next.name}`;
-    const dist = onRoute ? (next.km - state.meKm) * 1000 : haversine(state.me, next);
+    const dist = onRoute ? (nextKm - state.meKm) * 1000 : haversine(state.me, next);
     $("#pc-dist").textContent = fmtDist(Math.max(dist, 0));
     $(".pc-label", card).textContent = onRoute ? "Další zastavení" : "Nejbližší kaple (jste mimo trasu)";
   } else {
@@ -362,11 +376,134 @@ function initListEvents() {
     const b = e.target.closest("[data-n]");
     if (b) openChapel(+b.dataset.n);
   });
-  $$(".chips .chip").forEach((ch) => ch.addEventListener("click", () => {
-    $$(".chips .chip").forEach((x) => x.classList.toggle("is-on", x === ch));
+  $$("#view-kaple .chips .chip").forEach((ch) => ch.addEventListener("click", () => {
+    $$("#view-kaple .chips .chip").forEach((x) => x.classList.toggle("is-on", x === ch));
     state.filter = ch.dataset.filter;
     renderList();
   }));
+}
+
+/* ============ Trasy ============ */
+const geoOf = (id) => (id === "cela" ? state.route.geometry.coordinates : state.routeGeo[id]);
+async function routeCoords(id) {
+  if (!geoOf(id)) {
+    const r = state.routes.find((x) => x.id === id);
+    state.routeGeo[id] = (await loadJSON(r.file)).geometry.coordinates;
+  }
+  return geoOf(id);
+}
+async function setRoute(id) {
+  const r = state.routes.find((x) => x.id === id) || state.routes.find((x) => x.id === "cela");
+  const coords = await routeCoords(r.id);
+  state.routeId = r.id;
+  store.set("vs-route", r.id);
+  const latlngs = coords.map(([lon, lat]) => [lat, lon]);
+  state.routeCasing.setLatLngs(latlngs);
+  state.routeLine.setLatLngs(latlngs);
+  prepRoute(coords);
+  state.totalKm = routeCum.at(-1) / 1000;
+  // hlavní trasa: kilometráž z chapels.json; ostatní: kaple do 200 m od trasy, km podél ní
+  state.stops = r.id === "cela"
+    ? state.chapels.map((c) => ({ c, km: c.km }))
+    : state.chapels.map((c) => { const p = projectOnRoute(c.lat, c.lon); return { c, km: p.along / 1000, d: p.d }; })
+        .filter((s) => s.d < 200).sort((a, b) => a.km - b.km);
+  $("#route-chip").hidden = r.id === "cela";
+  $("#route-chip-name").textContent = r.short || r.name;
+  if (state.lastPos) onPosition(state.lastPos, false);
+  renderRoutes();
+}
+async function selectRoute(id) {
+  try { await setRoute(id); } catch { return toast("Trasu se nepodařilo načíst."); }
+  if (!$("#welcome").hidden) closeWelcome();
+  if (location.hash !== "#mapa") location.hash = "mapa";
+  else showView("mapa");
+  setTimeout(() => { state.map.invalidateSize(); fitRoute(); }, 60);
+}
+function initRoutes() {
+  $("#route-list").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-route]");
+    if (b) selectRoute(b.dataset.route);
+  });
+  $$("#route-chips .chip").forEach((ch) => ch.addEventListener("click", () => {
+    $$("#route-chips .chip").forEach((x) => x.classList.toggle("is-on", x === ch));
+    state.routeFilter = ch.dataset.mode;
+    renderRoutes();
+  }));
+  $("#route-chip-reset").addEventListener("click", () => setRoute("cela").then(() => fitRoute()));
+  renderRoutes();
+}
+// náčrtky tras – všechny ve stejném výřezu, aby šly porovnat
+let sketchLoad = null;
+function sketchSVG(id) {
+  if (!state.sketchBox) return `<span class="rc-sketch"></span>`;
+  const { minLon, maxLat, kx, s, ox, oy } = state.sketchBox;
+  const path = (coords) => {
+    const step = Math.max(1, Math.ceil(coords.length / 90));
+    const pts = coords.filter((_, i) => i % step === 0 || i === coords.length - 1);
+    return pts.map(([lon, lat], i) => `${i ? "L" : "M"}${(ox + (lon - minLon) * kx * s).toFixed(1)} ${(oy + (maxLat - lat) * s).toFixed(1)}`).join("");
+  };
+  const xy = ([lon, lat]) => [(ox + (lon - minLon) * kx * s).toFixed(1), (oy + (maxLat - lat) * s).toFixed(1)];
+  const c = geoOf(id), [ax, ay] = xy(c[0]), [bx, by] = xy(c.at(-1));
+  return `<svg class="rc-sketch" viewBox="0 0 96 64" aria-hidden="true">
+    ${id !== "cela" ? `<path class="rc-base" d="${path(geoOf("cela"))}"/>` : ""}
+    <path class="rc-line" d="${path(c)}"/>
+    <circle class="rc-a" cx="${ax}" cy="${ay}" r="3"/><circle class="rc-b" cx="${bx}" cy="${by}" r="3"/>
+  </svg>`;
+}
+function loadSketches() {
+  sketchLoad ||= Promise.all(state.routes.map((r) => routeCoords(r.id))).then(() => {
+    const all = state.routes.flatMap((r) => geoOf(r.id));
+    const lons = all.map((p) => p[0]), lats = all.map((p) => p[1]);
+    const minLon = Math.min(...lons), maxLon = Math.max(...lons), minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const kx = Math.cos(toRad((minLat + maxLat) / 2));
+    const W = 96, H = 64, pad = 7;
+    const s = Math.min((W - 2 * pad) / ((maxLon - minLon) * kx), (H - 2 * pad) / (maxLat - minLat));
+    state.sketchBox = { minLon, maxLat, kx, s, ox: (W - (maxLon - minLon) * kx * s) / 2, oy: (H - (maxLat - minLat) * s) / 2 };
+    renderRoutes();
+  }).catch(() => {});
+}
+function renderRoutes() {
+  const list = $("#route-list");
+  if (!state.routes.length || !state.routeCasing) return;
+  if (!state.sketchBox && !$("#view-trasy").hidden) loadSketches();
+  const f = state.routeFilter;
+  const items = state.routes.filter((r) => f === "all" || (f === "snadne" ? r.effort === 1 : r.mode === f));
+  list.innerHTML = items.map((r) => {
+    const on = r.id === state.routeId;
+    const standing = r.chapels.filter((n) => state.byN.get(n)?.status !== "zanikla").length;
+    return `<li><article class="route-card${on ? " is-on" : ""}">
+      <div class="rc-head">
+        ${sketchSVG(r.id)}
+        <div class="row-main">
+          <h3 class="rc-title">${esc(r.name)}</h3>
+          <div class="row-meta"><span class="badge badge-${r.mode}">${MODE_LABEL[r.mode]}</span><span class="rc-effort effort-${r.effort}" title="obtížnost ${r.effort} ze 3"><i></i><i></i><i></i>${esc(r.difficulty)}</span></div>
+        </div>
+      </div>
+      <div class="rc-stats">
+        <span><b>${fmtKm(r.km)}</b></span><span>${esc(r.time)}</span>${r.elevation != null ? `<span title="celkové stoupání">↑ ${r.elevation} m</span>` : ""}
+      </div>
+      ${r.surface ? `<p class="rc-surface">${esc(r.surface)}</p>` : ""}
+      <div class="rc-for"><span class="rc-for-label">Pro koho</span>${(r.suitableFor || []).map((t) => `<span class="rc-tag">${esc(t)}</span>`).join("")}</div>
+      <p class="rc-text">${esc(r.text)}</p>
+      <ul class="rc-hl">${r.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>
+      <dl class="rc-where">
+        <div><dt>Start</dt><dd>${esc(r.start.name)} · ${esc(r.start.transport)}</dd></div>
+        <div><dt>Cíl</dt><dd>${esc(r.end.name)}</dd></div>
+        <div><dt>Kaple</dt><dd>${r.chapels.length} zastavení, z toho ${standing} stojících kaplí a replik</dd></div>
+      </dl>
+      <details class="rc-more">
+        <summary>Praktické</summary>
+        <dl>
+          ${r.notFor ? `<div><dt>Pozor</dt><dd>${esc(r.notFor)}</dd></div>` : ""}
+          ${r.breaks ? `<div><dt>Občerstvení</dt><dd>${esc(r.breaks)}</dd></div>` : ""}
+          ${r.bailout ? `<div><dt>Zkrácení</dt><dd>${esc(r.bailout)}</dd></div>` : ""}
+        </dl>
+      </details>
+      <div class="rc-actions">
+        <button class="btn ${on ? "btn-ok" : "btn-primary"}" data-route="${r.id}"><svg viewBox="0 0 24 24"><use href="#i-${on ? "check" : "map"}"/></svg>${on ? "Vybráno · ukázat na mapě" : "Zobrazit na mapě"}</button>
+      </div>
+    </article></li>`;
+  }).join("");
 }
 
 /* ============ Detail kaple ============ */

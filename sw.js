@@ -1,6 +1,6 @@
 /* Service worker – offline průvodce.
    Aplikace a data: stale-while-revalidate. Mapové dlaždice: cache při prohlížení (omezený počet). */
-const VERSION = "v4";
+const VERSION = "v5";
 const APP = `svata-cesta-app-${VERSION}`;
 const TILES = "svata-cesta-tiles";
 const MAX_TILES = 1500;
@@ -8,6 +8,7 @@ const MAX_TILES = 1500;
 const SHELL = [
   "./", "index.html", "css/app.css", "js/app.js",
   "data/chapels.json", "data/route.geojson", "data/prayers.json", "data/events.json", "data/photos.json",
+  "data/routes.json", ...["cela", "letnany", "vinor", "kolo", "prosek"].map((id) => `data/routes/${id}.geojson`),
   "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png",
   "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css",
   "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js",
