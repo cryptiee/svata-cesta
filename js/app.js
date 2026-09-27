@@ -97,6 +97,7 @@ async function init() {
   if (state.routeId !== "cela") fitRoute(false);
   initRoutes();
   renderList();
+  initLocatePermission();
   renderPrayers();
   renderInfo();
   fillCredits();
@@ -325,55 +326,98 @@ async function syncWakeLock() {
     toast("Displej se nepodařilo nechat rozsvícený. Zkontrolujte režim úspory baterie.");
   }
 }
-function toggleLocate() {
+function geoDeniedHelp() {
+  const ua = navigator.userAgent;
+  if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1))
+    return "Poloha je zakázaná. V Safari klepněte na „aA“ v adresním řádku → Nastavení webu → Poloha → Povolit. Pokud to nepomůže: Nastavení iPhonu → Soukromí → Polohové služby → Weby Safari → Při používání.";
+  if (/Android/.test(ua))
+    return "Poloha je zakázaná. Klepněte na ikonu vlevo v adresním řádku → Oprávnění → Poloha → Povolit. Zkontrolujte také, že je v telefonu zapnutá Poloha.";
+  return "Přístup k poloze je zakázaný. Povolte ho v nastavení webu (ikona vlevo v adresním řádku).";
+}
+function stopLocate() {
   const btn = $("#btn-locate");
+  navigator.geolocation.clearWatch(state.watchId);
+  clearTimeout(state.geoSlowT);
+  state.watchId = null;
+  btn.classList.remove("is-on", "is-wait", "is-track");
+  setFollow(false);
+  state.meMarker && state.map.removeLayer(state.meMarker);
+  state.meCircle && state.map.removeLayer(state.meCircle);
+  state.meMarker = state.meCircle = null;
+  syncWakeLock();
+  $("#progress-card").hidden = true;
+  state.me = state.lastPos = null;
+  renderList();
+}
+async function toggleLocate() {
   if (state.watchId != null && !state.follow && state.me) {
     setFollow(true);
     state.map.setView([state.me.lat, state.me.lon], Math.max(state.map.getZoom(), 16));
     return;
   }
   if (state.watchId != null) {
-    navigator.geolocation.clearWatch(state.watchId);
-    state.watchId = null;
-    btn.classList.remove("is-on", "is-wait");
-    setFollow(false);
-    state.meMarker && state.map.removeLayer(state.meMarker);
-    state.meCircle && state.map.removeLayer(state.meCircle);
-    state.meMarker = state.meCircle = null;
-    syncWakeLock();
-    $("#progress-card").hidden = true;
-    state.me = state.lastPos = null;
-    renderList();
-    return;
+    store.set("vs-locate", false);
+    return stopLocate();
   }
+  startLocate();
+}
+// Spustí sledování polohy. Volá se z klepnutí (kvůli iOS musí žádost o oprávnění vzejít z gesta)
+// nebo po načtení stránky, když poutník polohu naposledy nechal zapnutou a oprávnění už má.
+function startLocate() {
   if (!("geolocation" in navigator)) return toast("Tento prohlížeč neumí zjistit polohu.");
+  if (!window.isSecureContext) return toast("Poloha funguje jen na zabezpečené adrese (https).");
+  const btn = $("#btn-locate");
   btn.classList.add("is-wait");
   let first = true;
-  state.watchId = navigator.geolocation.watchPosition(
-    (pos) => {
-      btn.classList.remove("is-wait");
-      btn.classList.add("is-on");
-      if (first) {
-        setFollow(true);
-        syncWakeLock();
-        if (!store.get("vs-follow-hint", false)) {
-          store.set("vs-follow-hint", true);
-          setTimeout(() => toast("Mapa vás sleduje. Posunutím mapy sledování vypnete, tlačítkem polohy ho zase zapnete."), 1200);
-        }
-      }
-      onPosition(pos, first);
-      first = false;
-    },
-    (err) => {
-      btn.classList.remove("is-wait", "is-on", "is-track");
-      navigator.geolocation.clearWatch(state.watchId);
-      state.watchId = null;
-      setFollow(false);
+  const onFix = (pos) => {
+    if (state.watchId == null) return;
+    clearTimeout(state.geoSlowT);
+    btn.classList.remove("is-wait");
+    btn.classList.add("is-on");
+    if (first) {
+      store.set("vs-locate", true);
+      setFollow(true);
       syncWakeLock();
-      toast(err.code === 1 ? "Přístup k poloze je zakázaný. Povolte ho v nastavení prohlížeče." : "Polohu se nepodařilo zjistit.");
-    },
-    { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
-  );
+      if (!store.get("vs-follow-hint", false)) {
+        store.set("vs-follow-hint", true);
+        setTimeout(() => toast("Mapa vás sleduje. Posunutím mapy sledování vypnete, tlačítkem polohy ho zase zapnete."), 1200);
+      }
+    }
+    // hrubá poloha (Wi-Fi/síť) nepřepíše přesnější GPS
+    if (!first && pos.coords.accuracy > 500 && state.lastPos && state.lastPos.coords.accuracy < pos.coords.accuracy
+        && pos.timestamp - state.lastPos.timestamp < 30000) return;
+    onPosition(pos, first);
+    first = false;
+  };
+  const onErr = (err) => {
+    if (state.watchId == null) return;
+    if (err.code === 1) {
+      store.set("vs-locate", false);
+      stopLocate();
+      toast(geoDeniedHelp(), 9000);
+    } else if (first) {
+      // bez signálu watch běží dál – GPS se často chytí až po chvíli
+      toast("Polohu zatím nelze zjistit, stále hledám signál…");
+    }
+  };
+  // bez timeoutu: watch se po výpadku signálu sám obnoví, místo aby sledování skončilo
+  state.watchId = navigator.geolocation.watchPosition(onFix, onErr, { enableHighAccuracy: true, maximumAge: 5000 });
+  // rychlá hrubá poloha, než naskočí GPS (zvlášť v zástavbě a na iPhonu trvá první GPS fix dlouho)
+  navigator.geolocation.getCurrentPosition((pos) => first && onFix(pos), () => {},
+    { enableHighAccuracy: false, maximumAge: 120000, timeout: 8000 });
+  clearTimeout(state.geoSlowT);
+  state.geoSlowT = setTimeout(() => first && state.watchId != null && toast("Hledám polohu… Venku pod širým nebem to jde rychleji."), 12000);
+}
+// Obnoví polohu po znovuotevření stránky (bez dotazu – jen když je oprávnění už udělené)
+// a zareaguje, když poutník oprávnění mezitím změní v nastavení.
+async function initLocatePermission() {
+  if (!("geolocation" in navigator) || !navigator.permissions) return;
+  let status;
+  try { status = await navigator.permissions.query({ name: "geolocation" }); } catch { return; }
+  if (status.state === "granted" && store.get("vs-locate", false) && state.watchId == null) startLocate();
+  status.addEventListener?.("change", () => {
+    if (status.state === "denied" && state.watchId != null) { stopLocate(); toast(geoDeniedHelp(), 9000); }
+  });
 }
 function onPosition(pos, first) {
   const { latitude: lat, longitude: lon, accuracy } = pos.coords;
@@ -769,12 +813,12 @@ function fillCredits() {
 
 /* ============ Drobnosti ============ */
 let toastT;
-function toast(msg) {
+function toast(msg, ms = 3200) {
   const t = $("#toast");
   t.textContent = msg;
   t.classList.add("is-on");
   clearTimeout(toastT);
-  toastT = setTimeout(() => t.classList.remove("is-on"), 3200);
+  toastT = setTimeout(() => t.classList.remove("is-on"), ms);
 }
 function registerSW() {
   const dev = ["localhost", "127.0.0.1"].includes(location.hostname) && !location.search.includes("sw");
