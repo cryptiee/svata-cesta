@@ -2,6 +2,8 @@
 
 Průvodce poutníka po **Svaté cestě (Via Sancta)** z Prahy do Staré Boleslavi, barokní poutní cestě se 44 výklenkovými kaplemi z let 1674–1680.
 
+**🌐 Web: [poutdoboleslavi.cz](https://poutdoboleslavi.cz/)**
+
 - 🗺️ mapa s pěší trasou (≈ 26 km) a všemi 44 kaplemi: stojícími, replikami i zaniklými
 - 🥾 doporučené varianty tras: zkrácené pěší, rodinná, cyklopouť a svatováclavská cesta z Proseka
 - 📍 „Kde jsem“: další zastavení, vzdálenost, ušlé km a automatické odškrtávání navštívených kaplí
