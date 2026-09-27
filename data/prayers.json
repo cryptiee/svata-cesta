@@ -1,5 +1,5 @@
 {
- "howto": "Svatá cesta má 44 zastavení – stejně jako loretánská litanie 44 invokací. U každé kaple (nebo na místě, kde kdysi stála) se můžete zastavit, pomodlit se její invokaci s odpovědí „oroduj za nás“ a jedno Zdrávas Maria. Mezi kaplemi je vždy asi 500 metrů – podle jezuity Jana Tannera „délky mostu Pražského“ – což je akorát na desátek růžence nebo tichou chvíli.",
+ "howto": "Svatá cesta má 44 zastavení, stejně jako má loretánská litanie 44 invokací. U každé kaple (nebo tam, kde kdysi stála) se můžete zastavit a pomodlit se její invokaci s odpovědí „oroduj za nás“ a jedno Zdrávas Maria. Mezi kaplemi je vždy asi 500 metrů, podle jezuity Jana Tannera „délky mostu Pražského“. To stačí právě na desátek růžence nebo chvíli ticha.",
  "litany": [
   [
    "Sancta Maria",
@@ -182,25 +182,25 @@
   {
    "id": "zacatek",
    "title": "Modlitba na začátek pouti",
-   "when": "U Poříčské brány nebo tam, kde vyrážíte",
-   "text": "Pane Ježíši, vydáváme se na cestu, kterou před námi šly celé generace poutníků – od svatého Václava až po naše předky.\nBuď s námi na každém kroku. Dej nám otevřené oči pro krásu kolem, otevřené srdce pro ty, kdo jdou s námi, a tiché nitro, abychom slyšeli Tvůj hlas.\nPanno Maria, Matko Staroboleslavská, veď nás. Svatý Václave, provázej nás.\nAmen."
+   "when": "U Poříčské brány nebo tam, kde vyrážíte",
+   "text": "Pane Ježíši, vydáváme se na cestu, po které před námi šly celé generace poutníků, od časů svatého Václava až po naše předky.\nBuď s námi na každém kroku. Otevři nám oči pro krásu kolem nás a srdce pro ty, kdo jdou s námi. Ztiš nás, abychom slyšeli Tvůj hlas.\nPanno Maria, Matko Staroboleslavská, veď nás. Svatý Václave, provázej nás.\nAmen."
   },
   {
    "id": "choral",
    "title": "Svatováclavský chorál",
-   "when": "Nejstarší česká duchovní píseň (13. stol.) – na cestu i u cíle",
+   "when": "Nejstarší česká duchovní píseň (13. stol.); hodí se na cestu i do cíle",
    "text": "Svatý Václave, vévodo české země, kníže náš,\npros za nás Boha, svatého Ducha!\nKriste eleison.\n\nNebeské to je dvorstvo krásné,\nblaze tomu, ktož tam pójde:\nv život věčný, oheň jasný svatého Ducha.\nKriste eleison.\n\nPomoci tvé žádámy,\nsmiluj se nad námi,\nutěš smutné, odžeň vše zlé,\nsvatý Václave!\nKriste eleison.\n\nTy jsi dědic české země,\nrozpomeň se na své plémě,\nnedej zahynouti nám ni budoucím,\nsvatý Václave!\nKriste eleison."
   },
   {
    "id": "vaclav",
    "title": "Modlitba ke svatému Václavu",
-   "when": "U cíle – u baziliky sv. Václava",
-   "text": "Svatý Václave, kníže a mučedníku, dědici české země,\nna tomto místě jsi zemřel s odpuštěním na rtech.\nVypros nám víru, která se nebojí, a lásku, která umí odpouštět.\nOchraňuj náš národ, naše rodiny i ty, kdo nás po nás budou nést tuto zemi.\nNedej zahynouti nám ni budoucím.\nAmen."
+   "when": "V cíli, u baziliky sv. Václava",
+   "text": "Svatý Václave, kníže a mučedníku, dědici české země,\nna tomto místě jsi zemřel s odpuštěním na rtech.\nVypros nám víru, která se nebojí, a lásku, která umí odpouštět.\nOchraňuj náš národ, naše rodiny i ty, kdo budou tuto zemi nést po nás.\nNedej zahynouti nám ni budoucím.\nAmen."
   },
   {
    "id": "palladium",
    "title": "Pod ochranu tvou",
-   "when": "Nejstarší mariánská modlitba (3. stol.) – u Palladia",
+   "when": "Nejstarší mariánská modlitba (3. stol.); pomodlete se ji u Palladia",
    "text": "Pod ochranu tvou se utíkáme, svatá Boží Rodičko,\nneodmítej naše prosby v našich potřebách,\nale ode všech nebezpečí vysvoboď nás vždycky,\nPanno slavná a požehnaná.\nAmen."
   },
   {
@@ -221,20 +221,20 @@
   {
    "id": "andel",
    "title": "Anděl Páně",
-   "when": "V poledne na cestě",
+   "when": "V poledne na cestě",
    "text": "Anděl Páně zvěstoval Panně Marii\na ona počala z Ducha Svatého.\nZdrávas Maria…\n\nHle, já jsem služebnice Páně,\nať se mi stane podle tvého slova.\nZdrávas Maria…\n\nA Slovo se stalo tělem\na přebývalo mezi námi.\nZdrávas Maria…\n\nOroduj za nás, svatá Boží Rodičko,\naby nás Kristus učinil hodnými svých zaslíbení.\n\nModleme se: Vlej, prosíme, Pane, do našich duší svou milost, abychom, kteří jsme skrze andělské zvěstování poznali vtělení Krista, tvého Syna, skrze jeho umučení a kříž byli přivedeni k slávě vzkříšení. Skrze Krista, našeho Pána.\nAmen."
   },
   {
    "id": "zdravaskralovno",
    "title": "Zdrávas, Královno",
-   "when": "U cíle – u Palladia",
+   "when": "V cíli, u Palladia",
    "text": "Zdrávas, Královno, Matko milosrdenství,\nživote, sladkosti a naděje naše, zdrávas!\nK tobě voláme, vyhnaní synové Evy,\nk tobě vzdycháme, lkajíce a plačíce v tomto slzavém údolí.\nOrodovnice naše, obrať k nám své milosrdné oči\na Ježíše, požehnaný plod života svého,\nukaž nám po tomto putování.\nÓ milostivá, ó přívětivá, ó přesladká Panno Maria!\nAmen."
   },
   {
    "id": "konec",
    "title": "Modlitba na konci pouti",
-   "when": "V cíli, ve Staré Boleslavi",
-   "text": "Díky, Pane, za každý krok této cesty – za únavu i za radost, za lidi, se kterými jsme šli, i za ticho, ve kterém jsme byli sami s Tebou.\nPřinášíme Ti všechno, co neseme: prosby, díky, bolesti i naděje.\nAť se vrátíme domů proměnění a ať naše každodenní cesta je také poutí k Tobě.\nPanno Maria Staroboleslavská, svatý Václave, orodujte za nás.\nAmen."
+   "when": "V cíli, ve Staré Boleslavi",
+   "text": "Děkujeme Ti, Pane, za každý krok této cesty: za únavu i radost, za lidi, se kterými jsme šli, i za chvíle ticha, kdy jsme byli sami s Tebou.\nPřinášíme Ti všechno, co neseme: prosby, díky, bolesti i naděje.\nDej, ať se domů vracíme proměnění a ať je i naše všední cesta poutí k Tobě.\nPanno Maria Staroboleslavská, svatý Václave, orodujte za nás.\nAmen."
   }
  ]
 }

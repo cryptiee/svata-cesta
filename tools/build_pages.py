@@ -332,7 +332,7 @@ def render(path, *, title, desc, body, section=None, crumbs=None, ld=(), og_img=
 {body}
 <footer class="page sp-foot">
   <nav aria-label="Stránky průvodce"><ul>{hub_links(prefix)}</ul></nav>
-  <p class="small">Svatá cesta je vedlejší projekt webu <a href="{PUBLISHER_URL}">{PUBLISHER_NAME}</a>. Našli jste chybu, nebo znáte něco, co by tu nemělo chybět? Napište na <a href="mailto:{PUBLISHER_EMAIL}">{PUBLISHER_EMAIL}</a>.</p>
+  <p class="small">Svatá cesta je nekomerční vedlejší projekt webu <a href="{PUBLISHER_URL}">{PUBLISHER_NAME}</a>. Našli jste chybu, nebo znáte něco, co by tu nemělo chybět? Napište na <a href="mailto:{PUBLISHER_EMAIL}">{PUBLISHER_EMAIL}</a>.</p>
 </footer>
 </div>
 </main>
@@ -435,7 +435,7 @@ def chapel_page(c):
         photo = (f'<div class="d-photo"><img src="{prefix}{ph["src"]}" alt="{esc(c["name"])} – {n}. zastavení Svaté cesty" width="{w}" height="{h}">'
                  f'<div class="credit-overlay">{credit_html(ph)}</div></div>')
     else:
-        txt = (f'Kaple se nedochovala.{" Přesné místo neznáme – poloha na mapě je jen odhad." if c.get("approx") else " Na mapě je vyznačeno její pravděpodobné místo."} I tady se můžete zastavit a pomodlit.'
+        txt = (f'Kaple se nedochovala.{" Přesné místo neznáme, poloha na&nbsp;mapě je jen odhad." if c.get("approx") else " Na&nbsp;mapě je vyznačeno její pravděpodobné místo."} I&nbsp;tady se můžete zastavit a&nbsp;pomodlit.'
                if lost else "Fotografie zatím chybí.")
         photo = f'<div class="d-nophoto"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#i-chapel"/></svg><span>{txt}</span></div>'
     p2 = photos.get(c.get("photo2") or "")
@@ -449,11 +449,11 @@ def chapel_page(c):
     on_routes = [r for r in routes if n in r["chapels"]]
     routes_html = ""
     if on_routes:
-        routes_html = ('<h2 class="sp-h">Trasy, které kaplí procházejí</h2><ul class="links">' +
+        routes_html = ('<h2 class="sp-h">Trasy, které vedou kolem kaple</h2><ul class="links">' +
                        "".join(f'<li><a href="{prefix}trasy/{r["id"]}/">{esc(r["name"])}</a> – {fmt_km(r["km"])}, {esc(r["time"])}, {MODE_LABEL[r["mode"]]}</li>' for r in on_routes) +
                        "</ul>")
     near = sorted((x for x in chapels if abs(x["n"] - n) > 1), key=lambda x: haversine((c["lat"], c["lon"]), (x["lat"], x["lon"])))[:3]
-    near_html = ('<h2 class="sp-h">Nejbližší další kaple</h2><ol class="chapel-list">' +
+    near_html = ('<h2 class="sp-h">Další kaple v&nbsp;okolí</h2><ol class="chapel-list">' +
                  "".join(chapel_row(x, prefix, f'{fmt_km(haversine((c["lat"], c["lon"]), (x["lat"], x["lon"])) / 1000)} vzdušnou čarou') for x in near) + "</ol>")
     prev, nxt = byN.get(n - 1), byN.get(n + 1)
     pager = ((f'<a href="{prefix}{chapel_path(prev)}" rel="prev"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-prev"/></svg><span>předchozí<b>{prev["n"]}. {esc(prev["name"])}</b></span></a>' if prev else "<span></span>") +
@@ -486,7 +486,7 @@ def chapel_page(c):
 <div class="d-links">
   <a href="{esc(mapy_url(c))}" target="_blank" rel="noopener">Mapy.cz</a>
   <a href="{esc(gmaps_url(c))}" target="_blank" rel="noopener">Google Maps</a>
-  <a href="{prefix}#k{n}">Otevřít v interaktivní mapě</a>
+  <a href="{prefix}#k{n}">Otevřít v&nbsp;interaktivní mapě</a>
 </div>
 {routes_html}
 {near_html}
@@ -576,7 +576,7 @@ def route_where(r, prefix):
             if r["id"] in ("cela", "kolo") else "")
     return (f'<dl class="rc-where"><div><dt>Start</dt><dd>{esc(r["start"]["name"])} · {esc(r["start"]["transport"])}{mass}</dd></div>'
             f'<div><dt>Cíl</dt><dd>{esc(r["end"]["name"])}</dd></div>'
-            f'<div><dt>Kaple</dt><dd>{len(r["chapels"])} zastavení, z toho {standing} stojících kaplí a replik</dd></div></dl>')
+            f'<div><dt>Kaple</dt><dd>{len(r["chapels"])} zastavení, z&nbsp;toho {standing} stojících kaplí a&nbsp;replik</dd></div></dl>')
 
 
 def route_practical(r):
@@ -605,7 +605,7 @@ def route_page(r):
   <h1>{esc(r["name"])}</h1>
   {route_meta(r)}
 </header>
-{sketch(r["id"], 300, 200, 14, 300, "rc-sketch sp-sketch", True, f'Náčrt trasy {r["name"]}: start {r["start"]["name"]}, cíl {r["end"]["name"]}; tečky jsou kaple')}
+{sketch(r["id"], 300, 200, 14, 300, "rc-sketch sp-sketch", True, f'Náčrt trasy {r["name"]}: start {r["start"]["name"]}, cíl {r["end"]["name"]}; tečky označují kaple')}
 {route_stats(r)}
 <p class="rc-text">{esc(r["text"])}</p>
 <ul class="rc-hl">{"".join(f"<li>{esc(h)}</li>" for h in r["highlights"])}</ul>
@@ -855,15 +855,15 @@ def pout_page():
   {f'<p class="lead">{esc(rec["text"])}</p>' if rec else ""}
 </header>
 {event_card(ev) if ev else ""}
-<p>Program pouti se každý rok aktualizuje podle poutního místa Stará Boleslav – platný program vždy najdete na <a href="{esc(source)}" target="_blank" rel="noopener">staraboleslav.com</a>.</p>
-<h2 class="sp-h">Pěšky nebo na kole z Prahy</h2>
-<p>Do Staré Boleslavi vede Svatá cesta se 44 barokními kaplemi. Vyberte si celou cestu od Poříčské brány, nebo kratší variantu:</p>
+<p>Program pouti každý rok vydává poutní místo Stará Boleslav. Platný program najdete vždy na <a href="{esc(source)}" target="_blank" rel="noopener">staraboleslav.com</a>.</p>
+<h2 class="sp-h">Pěšky nebo na kole z&nbsp;Prahy</h2>
+<p>Do Staré Boleslavi vede Svatá cesta se 44 barokními kaplemi. Můžete jít celou cestu od Poříčské brány, nebo si vybrat kratší variantu:</p>
 <ul class="links">{route_items}</ul>
 <div class="sp-lead-actions"><a class="btn btn-primary" href="{prefix}"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-map"/></svg>Otevřít mapu Svaté cesty</a><a class="btn btn-ghost" href="{prefix}info/">Praktické informace</a></div>
 <h2 class="sp-h">Modlitby na pouť</h2>
 <ul class="links">{pray}</ul>
-<h2 class="sp-h">Proč právě Stará Boleslav</h2>
-<p>Stará Boleslav je místo mučednické smrti svatého Václava a domov Palladia země české. <a href="{prefix}historie/">Příběh Svaté cesty</a> · <a href="{prefix}info/#zdroje">Zdroje</a></p>
+<h2 class="sp-h">Proč Stará Boleslav</h2>
+<p>Stará Boleslav je místem mučednické smrti svatého Václava a&nbsp;domovem Palladia země české. <a href="{prefix}historie/">Příběh Svaté cesty</a> · <a href="{prefix}info/#zdroje">Zdroje</a></p>
 </article>"""
     ld = [WEBSITE, ORG]
     year = ""
@@ -893,7 +893,7 @@ def page_404():
 <header class="page-head">
   <p class="eyebrow">Chyba 404</p>
   <h1>Stránka nenalezena</h1>
-  <p class="lead">Tuto stránku jsme nenašli. Možná se změnila její adresa. Zkuste mapu nebo některou z těchto stránek:</p>
+  <p class="lead">Tuto stránku jsme nenašli, možná se změnila její adresa. Zkuste mapu nebo některou z&nbsp;těchto stránek:</p>
 </header>
 <div class="sp-lead-actions"><a class="btn btn-primary" href="{SITE_URL}"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-map"/></svg>Otevřít mapu Svaté cesty</a></div>
 <ul class="links">{hub_links(SITE_URL)}</ul>

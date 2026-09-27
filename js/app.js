@@ -17,15 +17,15 @@ const POIS = [
   { kind: "start", lat: START.lat, lon: START.lon, title: "Poříčská brána", text: "Historický začátek Svaté cesty. Brána stála v místech dnešního náměstí Republiky (u ulice Na Poříčí). Poutníci sem přicházeli z katedrály sv. Víta, z Lorety nebo od sv. Jakuba.",
     mass: [["sv. Petr na Poříčí", "sv-petra-na-porici"], ["sv. Josef (nám. Republiky)", "sv-josefa-nove-mesto"], ["sv. Jakub, odkud vedli poutě jezuité", "sv-jakuba-starsiho-stare-mesto"]] },
   { kind: "end", lat: 50.194591, lon: 14.67228, title: "Bazilika sv. Václava", text: "Místo mučednické smrti sv. Václava (28. 9. 935). Pod kostelem je románská krypta sv. Kosmy a Damiána. Hned vedle stojí románský kostel sv. Klimenta." },
-  { kind: "end", lat: 50.196034, lon: 14.676585, title: "Bazilika Nanebevzetí Panny Marie", text: "Raně barokní poutní chrám z let 1613–1623, domov Palladia země české – cíl mariánských poutí a Svaté cesty." },
+  { kind: "end", lat: 50.196034, lon: 14.676585, title: "Bazilika Nanebevzetí Panny Marie", text: "Raně barokní poutní chrám z let 1613–1623. Je domovem Palladia země české a cílem mariánských poutí i Svaté cesty." },
   { kind: "end", lat: 50.197362, lon: 14.678337, title: "Kaple bl. Podivena", text: "Kaple připomíná Podivena, věrného sluhu sv. Václava, který podle legendy ukryl Palladium." },
 ];
 const STAGES = [
-  { from: 0, to: 4.5, chapels: [1, 8], title: "Praha – Karlín – Libeň", text: "Od Poříčské brány (náměstí Republiky) Karlínem a přes Palmovku. Původní kaple ustoupily železnici a městu – dochovala se jen kaplička u Invalidovny (č. 4). Metro B: Florenc, Křižíkova, Invalidovna, Palmovka." },
-  { from: 4.5, to: 8, chapels: [9, 13], title: "Vysočany – Klíčov", text: "Přes Rokytku do Vysočan a do kopce ulicemi Pod Krocínkou a Ke Klíčovu. Nahoře na poli stojí první kaple mezi poli (č. 12)." },
-  { from: 8, to: 12.5, chapels: [14, 21], title: "Letňany – Kbely", text: "Nejlépe obnovený úsek: cyklostezka s alejí po stopě staré cesty, kaple 14, 15 a 17 a čtyři nové repliky v Kbelích. Dobré místo pro start zkrácené pouti (metro C Letňany)." },
-  { from: 12.5, to: 17.5, chapels: [22, 29], title: "Vinoř", text: "Polní cestou ke kaplím 23 a 24 (tady se stará stezka dochovala jako mez mezi poli), pak Vinoří kolem kaple s nápisem Rosa Mystica (č. 26) až ke Svatokřížské kapli u rybníka." },
-  { from: 17.5, to: 22, chapels: [30, 38], title: "Podolanka – Dřevčice", text: "Nejdelší řada dochovaných kaplí – 30, 32, 33, 35, 36 a 38 – v krajině otevřených polí. Cesta vede podél silnice, jděte opatrně." },
+  { from: 0, to: 4.5, chapels: [1, 8], title: "Praha – Karlín – Libeň", text: "Od Poříčské brány (náměstí Republiky) přes Karlín na Palmovku. Původní kaple ustoupily železnici a městu, dochovala se jen kaple u Invalidovny (č. 4). Metro B: Florenc, Křižíkova, Invalidovna, Palmovka." },
+  { from: 4.5, to: 8, chapels: [9, 13], title: "Vysočany – Klíčov", text: "Přes Rokytku do Vysočan a ulicemi Pod Krocínkou a Ke Klíčovu do kopce. Nahoře stojí první kaple v polích (č. 12)." },
+  { from: 8, to: 12.5, chapels: [14, 21], title: "Letňany – Kbely", text: "Nejlépe obnovený úsek: cyklostezka s alejí po stopě staré cesty, kaple 14, 15 a 17 a čtyři nové repliky v Kbelích. Tady se dobře začíná zkrácená pouť (metro C Letňany)." },
+  { from: 12.5, to: 17.5, chapels: [22, 29], title: "Vinoř", text: "Polní cestou ke kaplím 23 a 24 (stará stezka se tu dochovala jako mez mezi poli), pak přes Vinoř kolem kaple s nápisem Rosa Mystica (č. 26) až ke Svatokřížské kapli u rybníka." },
+  { from: 17.5, to: 22, chapels: [30, 38], title: "Podolanka – Dřevčice", text: "Nejdelší řada dochovaných kaplí (30, 32, 33, 35, 36 a 38) v otevřené krajině polí. Cesta vede podél silnice, jděte opatrně." },
   { from: 22, to: 26, chapels: [39, 44], title: "Vrábí – Brandýs – Stará Boleslav", text: "Brandýsem kolem kaplí 41 a 42, přes Masarykovo náměstí, pod zámkem přes Labe a do Staré Boleslavi k oběma bazilikám." },
 ];
 
@@ -303,7 +303,7 @@ function toggleLocate() {
       btn.classList.remove("is-wait", "is-on");
       navigator.geolocation.clearWatch(state.watchId);
       state.watchId = null;
-      toast(err.code === 1 ? "Přístup k poloze je zakázaný – povolte ho v nastavení prohlížeče." : "Polohu se nepodařilo zjistit.");
+      toast(err.code === 1 ? "Přístup k poloze je zakázaný. Povolte ho v nastavení prohlížeče." : "Polohu se nepodařilo zjistit.");
     },
     { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
   );
@@ -557,7 +557,7 @@ function openChapel(n, keepScroll = false) {
   const photo = ph
     ? `<div class="d-photo"><img src="${ph.src}" alt="${esc(c.name)}"><div class="credit-overlay">Foto: ${esc(ph.author)}, <a href="${ph.page}" target="_blank" rel="noopener">${esc(ph.license)}</a></div></div>`
     : `<div class="d-nophoto"><svg viewBox="0 0 32 32"><use href="#i-chapel"/></svg><span>${c.status === "zanikla"
-        ? `Kaple se nedochovala.${c.approx ? " Přesné místo neznáme – poloha na mapě je jen odhad." : " Na mapě je vyznačeno její pravděpodobné místo."} I tady se můžete zastavit a pomodlit.`
+        ? `Kaple se nedochovala.${c.approx ? " Přesné místo neznáme, poloha na mapě je jen odhad." : " Na mapě je vyznačeno její pravděpodobné místo."} I tady se můžete zastavit a pomodlit.`
         : "Fotografie zatím chybí."}</span></div>`;
 
   $("#sheet-body").innerHTML = `

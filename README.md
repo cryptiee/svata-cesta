@@ -1,16 +1,16 @@
 # Svatá cesta · Praha → Stará Boleslav
 
-Průvodce poutníka po **Svaté cestě (Via Sancta)** z Prahy do Staré Boleslavi – barokní poutní cestě se 44 výklenkovými kaplemi z let 1674–1680.
+Průvodce poutníka po **Svaté cestě (Via Sancta)** z Prahy do Staré Boleslavi, barokní poutní cestě se 44 výklenkovými kaplemi z let 1674–1680.
 
-- 🗺️ mapa s pěší trasou (≈ 26 km) a všemi 44 kaplemi – stojícími, replikami i zaniklými
-- 🥾 doporučené varianty tras – zkrácené pěší, rodinná, cyklopouť a svatováclavská cesta z Proseka
-- 📍 „kde jsem“ – další zastavení, vzdálenost, ušlé km, automatické odškrtávání navštívených kaplí
+- 🗺️ mapa s pěší trasou (≈ 26 km) a všemi 44 kaplemi: stojícími, replikami i zaniklými
+- 🥾 doporučené varianty tras: zkrácené pěší, rodinná, cyklopouť a svatováclavská cesta z Proseka
+- 📍 „Kde jsem“: další zastavení, vzdálenost, ušlé km a automatické odškrtávání navštívených kaplí
 - 🙏 modlitby na cestu; ke každé kapli její invokace loretánské litanie
 - 📜 historie cesty a každé kaple, donátoři, mariánská poutní místa
-- 📅 kalendář poutí + aktuální program Národní svatováclavské pouti
-- 📶 funguje offline (PWA – „Přidat na plochu“)
+- 📅 kalendář poutí a aktuální program Národní svatováclavské pouti
+- 📶 funguje offline (PWA, „Přidat na plochu“)
 
-Čistě statický web (HTML + CSS + vanilla JS + Leaflet). Aplikace žádný build nepotřebuje; statické stránky pro vyhledávače generuje `tools/build_pages.py` (viz níže).
+Čistě statický web (HTML + CSS + vanilla JS + Leaflet). Aplikace nepotřebuje žádný build; statické stránky pro vyhledávače generuje `tools/build_pages.py` (viz níže).
 
 ## Lokální spuštění
 
