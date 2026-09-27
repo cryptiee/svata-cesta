@@ -10,7 +10,7 @@ Průvodce poutníka po **Svaté cestě (Via Sancta)** z Prahy do Staré Boleslav
 - 📅 kalendář poutí + aktuální program Národní svatováclavské pouti
 - 📶 funguje offline (PWA – „Přidat na plochu“)
 
-Čistě statický web (HTML + CSS + vanilla JS + Leaflet), žádný build.
+Čistě statický web (HTML + CSS + vanilla JS + Leaflet). Aplikace žádný build nepotřebuje; statické stránky pro vyhledávače generuje `tools/build_pages.py` (viz níže).
 
 ## Lokální spuštění
 
@@ -32,13 +32,45 @@ a otevřít <http://localhost:8321>. Service worker se na localhostu nezapíná 
 | `data/routes.json` | doporučené varianty tras (záložka Trasy) – texty, obtížnost, pro koho, km, stoupání, kaple na trase |
 | `data/routes/<id>.geojson` | geometrie jednotlivých variant (`cela` = kopie `route.geojson`) |
 | `tools/build_routes.py` | generátor variant: trasy přes OSRM, km, stoupání (Open-Meteo) a kaple do 150 m; texty variant se upravují přímo v něm |
+| `tools/build_pages.py` | generátor statických stránek pro vyhledávače (SEO) – viz níže |
 
 Po změně polohy kaple přepočítejte kilometráž: `python3 tools/add_km.py`.
 Po změně hlavní trasy, kaplí nebo textů variant spusťte `python3 tools/build_routes.py` (přepíše `data/routes.json` a `data/routes/`).
+Po **jakékoli** změně dat nebo textů spusťte nakonec `python3 tools/build_pages.py`.
+
+Pořadí nástrojů: `add_km.py` → `build_routes.py` → `build_pages.py`.
 Odkaz `#trasa-<id>` (např. `#trasa-letnany`) otevře mapu s danou variantou.
 Po změně souborů zvyšte `VERSION` v `sw.js`, aby se offline cache obnovila.
 
-**Každý rok:** přidejte do `data/events.json` → `special` program nové svatováclavské pouti (z plakátu na staraboleslav.com).
+**Každý rok:** přidejte do `data/events.json` → `special` program nové svatováclavské pouti (z plakátu na staraboleslav.com) včetně `startDate` a `endDate` (YYYY-MM-DD, použijí se ve strukturovaných datech Event) a spusťte `python3 tools/build_pages.py`. Statické stránky zobrazí program jen tehdy, když je build spuštěn mezi `showFrom` a `showUntil` – po pouti je proto dobré build pustit znovu.
+
+## Statické stránky a SEO (`tools/build_pages.py`)
+
+Aplikace přepíná pohledy přes `#hash`, vyhledávače ji tedy vidí jako jedinou stránku. `tools/build_pages.py` (python3, jen standardní knihovna) proto z dat vygeneruje samostatné stránky s vlastní adresou, titulkem, popisem, canonical, Open Graph a strukturovanými daty (JSON-LD):
+
+| Adresa | Obsah |
+| --- | --- |
+| `kaple/`, `kaple/<n>-<slug>/` | přehled a 44 stránek kaplí (např. `kaple/26-pakenska-kaple/`) |
+| `trasy/`, `trasy/<id>/` | přehled a 5 variant tras |
+| `modlitby/`, `modlitby/<slug>/`, `modlitby/loretanska-litanie/` | všechny modlitby, každá modlitba zvlášť, litanie s odkazy na kaple |
+| `historie/`, `info/` | text z `index.html` (značky `<!-- build:historie -->`, `<!-- build:info -->`) |
+| `svatovaclavska-pout/` | Národní svatováclavská pouť – kalendář + aktuální program z `events.json` |
+| `404.html`, `sitemap.xml`, `robots.txt` | chybová stránka, mapa webu, pravidla pro roboty |
+
+Skript také přepíše blok `<!-- build:head -->` v hlavičce `index.html` (titulek, popis, canonical, OG, JSON-LD) – ten needitujte ručně. Texty historie, informací a úvodu litanie upravujte v `index.html` mezi značkami `build:…`; úseky cesty v `STAGES` v `js/app.js`. Vygenerované stránky needitujte, přepíšou se.
+
+- `SITE_URL` na začátku skriptu je jediné místo s adresou webu (canonical, `og:*`, sitemap). Odkazy uvnitř stránek jsou relativní, takže web funguje v podadresáři (`/svata-cesta/` na GitHub Pages) i v kořeni domény. Výjimkou je `404.html` s absolutními odkazy.
+- Seznamy v aplikaci (kaple, litanie, úseky, tlačítka tras) jsou skutečné odkazy na tyto stránky; aplikace běžné kliknutí zachytí a otevře detail jako dřív, Ctrl/Cmd+klik otevře statickou stránku.
+- Service worker statické stránky nepředukládá; uloží je při první návštěvě.
+
+## Vlastní doména
+
+1. V `tools/build_pages.py` nastavte `SITE_URL` (např. `https://poutdoboleslavi.cz/`) a spusťte `python3 tools/build_pages.py`.
+2. Do kořene repozitáře přidejte soubor `CNAME` s jediným řádkem `poutdoboleslavi.cz`.
+3. DNS u registrátora: záznamy `A` pro `@` → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153` (případně `AAAA` `2606:50c0:8000::153` … `8003::153`) a `CNAME` pro `www` → `cryptiee.github.io`.
+4. GitHub → Settings → Pages: vyplňte Custom domain, počkejte na certifikát a zapněte **Enforce HTTPS**.
+5. Google Search Console: přidejte doménovou službu (ověření TXT záznamem), odešlete `https://poutdoboleslavi.cz/sitemap.xml`; totéž v Bing Webmaster Tools.
+6. Staré adresy `cryptiee.github.io/svata-cesta/…` GitHub po nastavení domény sám přesměruje.
 
 ## Zdroje a licence
 

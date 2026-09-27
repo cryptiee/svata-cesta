@@ -3,6 +3,11 @@
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+// adresy statických stránek (tools/build_pages.py) – stejný slug jako v Pythonu
+const slugify = (s) => String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+const chapelPath = (c) => `kaple/${c.n}-${slugify(c.name)}/`;
+// obyčejné kliknutí zachytí aplikace; Ctrl/Cmd/prostřední tlačítko otevře statickou stránku
+const plainClick = (e) => !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button > 0);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const STATUS_LABEL = { stoji: "stojí", replika: "replika", zanikla: "zaniklá" };
@@ -101,6 +106,7 @@ async function init() {
 
 /* ============ Navigace (views) ============ */
 const VIEWS = ["mapa", "trasy", "kaple", "modlitby", "historie", "info"];
+const HOME_TITLE = document.title;
 function initNav() {
   const top = $(".topnav");
   top.innerHTML = $$(".tabbar a").map((a) => `<a href="${a.getAttribute("href")}" data-view="${a.dataset.view}">${a.querySelector("span").textContent}</a>`).join("");
@@ -129,7 +135,7 @@ function route_() {
 function showView(v) {
   VIEWS.forEach((name) => ($(`#view-${name}`).hidden = name !== v));
   $$("[data-view]").forEach((a) => a.classList.toggle("is-on", a.dataset.view === v));
-  document.title = v === "mapa" ? "Svatá cesta · Praha → Stará Boleslav" : `${$(`#view-${v}`).dataset.title} · Svatá cesta`;
+  document.title = v === "mapa" ? HOME_TITLE : `${$(`#view-${v}`).dataset.title} · Svatá cesta`;
   if (v === "mapa" && state.map) setTimeout(() => state.map.invalidateSize(), 0);
   if (v !== "mapa") window.scrollTo(0, 0);
   if (v === "kaple") renderList();
@@ -364,16 +370,16 @@ function renderList() {
   const items = state.chapels.filter((c) => state.filter === "all" || c.status === state.filter);
   list.innerHTML = items.map((c) => {
     const ph = c.photo && state.photos[c.photo];
-    const thumb = ph ? `<img class="thumb" src="${ph.src}" alt="" loading="lazy">` : `<span class="thumb">${c.n}</span>`;
+    const thumb = ph ? `<img class="thumb" src="${ph.src}" alt="" width="64" height="64" loading="lazy">` : `<span class="thumb">${c.n}</span>`;
     const dist = state.me ? `<div>${fmtDist(haversine(state.me, c))}</div>` : `<div>km ${String(c.km).replace(".", ",")}</div>`;
-    return `<li><button class="chapel-row ${c.status === "zanikla" ? "is-lost" : ""}" data-n="${c.n}">
+    return `<li><a class="chapel-row ${c.status === "zanikla" ? "is-lost" : ""}" href="${chapelPath(c)}" data-n="${c.n}">
       ${thumb}
       <span class="row-main">
         <span class="row-title"><span class="row-num">${c.n}.</span>${esc(c.name)}</span>
         <span class="row-meta"><span class="badge badge-${c.status}">${STATUS_LABEL[c.status]}</span>${esc(c.area)}</span>
       </span>
       <span class="row-side">${dist}${state.visited.has(c.n) ? '<span class="row-check" title="Navštíveno"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span>' : ""}</span>
-    </button></li>`;
+    </a></li>`;
   }).join("");
   const standing = state.chapels.filter((c) => c.status !== "zanikla");
   const v = standing.filter((c) => state.visited.has(c.n)).length;
@@ -382,7 +388,7 @@ function renderList() {
 function initListEvents() {
   $("#chapel-list").addEventListener("click", (e) => {
     const b = e.target.closest("[data-n]");
-    if (b) openChapel(+b.dataset.n);
+    if (b && plainClick(e)) { e.preventDefault(); openChapel(+b.dataset.n); }
   });
   $$("#view-kaple .chips .chip").forEach((ch) => ch.addEventListener("click", () => {
     $$("#view-kaple .chips .chip").forEach((x) => x.classList.toggle("is-on", x === ch));
@@ -430,7 +436,7 @@ async function selectRoute(id) {
 function initRoutes() {
   $("#route-list").addEventListener("click", (e) => {
     const b = e.target.closest("[data-route]");
-    if (b) selectRoute(b.dataset.route);
+    if (b && plainClick(e)) { e.preventDefault(); selectRoute(b.dataset.route); }
   });
   $$("#route-chips .chip").forEach((ch) => ch.addEventListener("click", () => {
     $$("#route-chips .chip").forEach((x) => x.classList.toggle("is-on", x === ch));
@@ -508,7 +514,7 @@ function renderRoutes() {
         </dl>
       </details>
       <div class="rc-actions">
-        <button class="btn ${on ? "btn-ok" : "btn-primary"}" data-route="${r.id}"><svg viewBox="0 0 24 24"><use href="#i-${on ? "check" : "map"}"/></svg>${on ? "Vybráno · ukázat na mapě" : "Zobrazit na mapě"}</button>
+        <a class="btn ${on ? "btn-ok" : "btn-primary"}" href="trasy/${r.id}/" data-route="${r.id}"><svg viewBox="0 0 24 24"><use href="#i-${on ? "check" : "map"}"/></svg>${on ? "Vybráno · ukázat na mapě" : "Zobrazit na mapě"}</a>
       </div>
     </article></li>`;
   }).join("");
@@ -633,11 +639,11 @@ function renderPrayers() {
     </details>`).join("");
   $("#litany-list").innerHTML = P.litany.map(([la, cs], i) => {
     const c = state.byN.get(i + 1);
-    return `<li><button data-n="${i + 1}">${esc(cs)} <em>– oroduj za nás</em><small>${esc(la)} · kaple ${esc(c.name)}</small></button></li>`;
+    return `<li><a href="${chapelPath(c)}" data-n="${i + 1}">${esc(cs)} <em>– oroduj za nás</em><small>${esc(la)} · kaple ${esc(c.name)}</small></a></li>`;
   }).join("");
   $("#litany-list").addEventListener("click", (e) => {
     const b = e.target.closest("[data-n]");
-    if (b) openChapel(+b.dataset.n);
+    if (b && plainClick(e)) { e.preventDefault(); openChapel(+b.dataset.n); }
   });
 }
 
@@ -672,12 +678,12 @@ function renderInfo() {
       <div class="st-km">km ${s.from} – ${s.to}</div>
       <div class="st-title">${esc(s.title)}</div>
       <p class="st-text">${esc(s.text)}</p>
-      <div class="st-chips">${cs.map((c) => `<button class="${c.status !== "zanikla" ? "stoji" : ""}" data-n="${c.n}" title="${esc(c.name)} – ${STATUS_LABEL[c.status]}">${c.n}</button>`).join("")}</div>
+      <div class="st-chips">${cs.map((c) => `<a class="${c.status !== "zanikla" ? "stoji" : ""}" href="${chapelPath(c)}" data-n="${c.n}" title="${esc(c.name)} – ${STATUS_LABEL[c.status]}">${c.n}</a>`).join("")}</div>
     </li>`;
   }).join("");
   $("#stages").addEventListener("click", (e) => {
     const b = e.target.closest("[data-n]");
-    if (b) openChapel(+b.dataset.n);
+    if (b && plainClick(e)) { e.preventDefault(); openChapel(+b.dataset.n); }
   });
 }
 function fillCredits() {

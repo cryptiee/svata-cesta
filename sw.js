@@ -1,6 +1,8 @@
 /* Service worker – offline průvodce.
-   Aplikace a data: stale-while-revalidate. Mapové dlaždice: cache při prohlížení (omezený počet). */
-const VERSION = "v6";
+   Aplikace a data: stale-while-revalidate. Mapové dlaždice: cache při prohlížení (omezený počet).
+   Statické stránky (kaple/, trasy/ … z tools/build_pages.py) se nepředukládají – uloží se při první
+   návštěvě a offline pak fungují; nenavštívená stránka offline ukáže odkaz na průvodce. */
+const VERSION = "v7";
 const APP = `svata-cesta-app-${VERSION}`;
 const TILES = "svata-cesta-tiles";
 const MAX_TILES = 1500;
@@ -72,10 +74,25 @@ self.addEventListener("fetch", (e) => {
     if (hit) { e.waitUntil(net); return hit; }
     const res = await net;
     if (res) return res;
-    if (req.mode === "navigate") return c.match("index.html");
+    if (req.mode === "navigate") return offlineFallback(c, url);
     return new Response("", { status: 504 });
   })());
 });
+
+// Offline a stránka není v cache: aplikace jen pro kořen webu, jinak krátká offline stránka
+// (index.html má relativní cesty, v podadresáři by se rozbil).
+async function offlineFallback(c, url) {
+  const scope = new URL(self.registration.scope);
+  if (url.pathname === scope.pathname || url.pathname === `${scope.pathname}index.html`) {
+    return (await c.match("index.html")) || new Response("", { status: 504 });
+  }
+  const html = `<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Offline · Svatá cesta</title><link rel="stylesheet" href="${scope.href}css/app.css"></head>
+<body><main style="padding-top:0"><div class="page prose"><header class="page-head"><p class="eyebrow">Offline</p><h1>Jste bez připojení</h1></header>
+<p>Tuto stránku jste zatím neotevřeli s připojením, proto není uložená. Mapa, kaple a modlitby v průvodci fungují i offline.</p>
+<p><a class="btn btn-primary" href="${scope.href}">Otevřít průvodce</a></p></div></main></body></html>`;
+  return new Response(html, { status: 503, headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
 
 let trimming = false;
 async function trimTiles(c) {
