@@ -236,6 +236,13 @@ function initMap() {
   });
   map.on("click", () => { $("#layers-menu").hidden = true; $("#btn-layers").classList.remove("is-on"); });
   $("#btn-locate").addEventListener("click", toggleLocate);
+  $("#pc-wake").addEventListener("click", () => {
+    state.wakeWanted = !state.wakeWanted;
+    store.set("vs-wake", state.wakeWanted);
+    syncWakeLock();
+  });
+  // prohlížeč zámek uvolní, když stránka zmizí z obrazovky – po návratu ho obnov
+  document.addEventListener("visibilitychange", () => document.visibilityState === "visible" && syncWakeLock());
   // posunutí mapy prstem vypne sledování polohy (poloha se ale dál ukazuje)
   map.on("dragstart", () => setFollow(false));
   $("#pc-next").addEventListener("click", () => state.nextN && (focusChapel(state.nextN), openChapel(state.nextN)));
@@ -295,6 +302,29 @@ function setFollow(on) {
   btn.setAttribute("aria-label", state.watchId == null ? "Zobrazit mou polohu" : on ? "Vypnout polohu" : "Sledovat mou polohu");
   btn.title = state.watchId == null ? "Kde jsem?" : on ? "Mapa vás sleduje – klepnutím polohu vypnete" : "Znovu sledovat mou polohu";
 }
+// Displej svítí jen na přání a jen se zapnutou polohou (Screen Wake Lock API).
+async function syncWakeLock() {
+  const btn = $("#pc-wake");
+  if (!("wakeLock" in navigator)) return;
+  if (state.wakeWanted == null) state.wakeWanted = store.get("vs-wake", false);
+  const want = state.wakeWanted && state.watchId != null;
+  btn.hidden = state.watchId == null;
+  btn.setAttribute("aria-pressed", String(state.wakeWanted));
+  if (!want) {
+    const lock = state.wakeLock;
+    state.wakeLock = null;
+    return lock?.release().catch(() => {});
+  }
+  if (state.wakeLock || document.visibilityState !== "visible") return;
+  try {
+    state.wakeLock = await navigator.wakeLock.request("screen");
+    state.wakeLock.addEventListener("release", () => { state.wakeLock = null; });
+  } catch {
+    state.wakeWanted = false;
+    btn.setAttribute("aria-pressed", "false");
+    toast("Displej se nepodařilo nechat rozsvícený. Zkontrolujte režim úspory baterie.");
+  }
+}
 function toggleLocate() {
   const btn = $("#btn-locate");
   if (state.watchId != null && !state.follow && state.me) {
@@ -310,6 +340,7 @@ function toggleLocate() {
     state.meMarker && state.map.removeLayer(state.meMarker);
     state.meCircle && state.map.removeLayer(state.meCircle);
     state.meMarker = state.meCircle = null;
+    syncWakeLock();
     $("#progress-card").hidden = true;
     state.me = state.lastPos = null;
     renderList();
@@ -324,6 +355,7 @@ function toggleLocate() {
       btn.classList.add("is-on");
       if (first) {
         setFollow(true);
+        syncWakeLock();
         if (!store.get("vs-follow-hint", false)) {
           store.set("vs-follow-hint", true);
           setTimeout(() => toast("Mapa vás sleduje. Posunutím mapy sledování vypnete, tlačítkem polohy ho zase zapnete."), 1200);
@@ -337,6 +369,7 @@ function toggleLocate() {
       navigator.geolocation.clearWatch(state.watchId);
       state.watchId = null;
       setFollow(false);
+      syncWakeLock();
       toast(err.code === 1 ? "Přístup k poloze je zakázaný. Povolte ho v nastavení prohlížeče." : "Polohu se nepodařilo zjistit.");
     },
     { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
