@@ -757,7 +757,7 @@ def history_page():
 <div class="sp-lead-actions"><a class="btn btn-primary" href="{prefix}"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-map"/></svg>Otevřít mapu Svaté cesty</a><a class="btn btn-ghost" href="{prefix}kaple/">Všech 44 kaplí</a></div>
 </article>"""
     imgs = [SITE_URL + m for m in re.findall(r'src="(img/[^"]+)"', block("historie"))]
-    desc = "Historie Svaté cesty z Prahy do Staré Boleslavi: svatý Václav, Palladium země české, jezuité a 44 barokních kaplí z let 1674–1679, jejich zánik a obnova."
+    desc = "Historie Svaté cesty z Prahy do Staré Boleslavi: svatý Václav, Palladium země české, jezuité a 44 barokních kaplí z let 1674–1680, jejich zánik a obnova."
     art = {"@type": "Article", "headline": vh["title"], "name": f'{vh["title"]} – historie Svaté cesty', "description": clip(desc),
            "url": SITE_URL + "historie/", "mainEntityOfPage": SITE_URL + "historie/", "inLanguage": "cs", "image": imgs,
            "author": {"@id": ORG_ID}, "publisher": {"@id": ORG_ID}, "about": TRAIL}

@@ -2,7 +2,7 @@
    Aplikace a data: stale-while-revalidate. Mapové dlaždice: cache při prohlížení (omezený počet).
    Statické stránky (kaple/, trasy/ … z tools/build_pages.py) se nepředukládají – uloží se při první
    návštěvě a offline pak fungují; nenavštívená stránka offline ukáže odkaz na průvodce. */
-const VERSION = "v8";
+const VERSION = "v9";
 const APP = `svata-cesta-app-${VERSION}`;
 const TILES = "svata-cesta-tiles";
 const MAX_TILES = 1500;

@@ -21,10 +21,10 @@ const POIS = [
   { kind: "end", lat: 50.197362, lon: 14.678337, title: "Kaple bl. Podivena", text: "Kaple připomíná Podivena, věrného sluhu sv. Václava, který podle legendy ukryl Palladium." },
 ];
 const STAGES = [
-  { from: 0, to: 4.5, chapels: [1, 8], title: "Praha – Karlín – Libeň", text: "Od Poříčské brány (náměstí Republiky) přes Karlín na Palmovku. Původní kaple ustoupily železnici a městu, dochovala se jen kaple u Invalidovny (č. 4). Metro B: Florenc, Křižíkova, Invalidovna, Palmovka." },
+  { from: 0, to: 4.5, chapels: [1, 8], title: "Praha – Karlín – Libeň", text: "Od Poříčské brány (náměstí Republiky) přes Karlín na Palmovku. Původní kaple ustoupily železnici a městu, stojí jen kaple u Invalidovny, nejspíš přenesená replika kaple č. 4. Metro B: Florenc, Křižíkova, Invalidovna, Palmovka." },
   { from: 4.5, to: 8, chapels: [9, 13], title: "Vysočany – Klíčov", text: "Přes Rokytku do Vysočan a ulicemi Pod Krocínkou a Ke Klíčovu do kopce. Nahoře stojí první kaple v polích (č. 12)." },
   { from: 8, to: 12.5, chapels: [14, 21], title: "Letňany – Kbely", text: "Nejlépe obnovený úsek: cyklostezka s alejí po stopě staré cesty, kaple 14, 15 a 17 a čtyři nové repliky v Kbelích. Tady se dobře začíná zkrácená pouť (metro C Letňany)." },
-  { from: 12.5, to: 17.5, chapels: [22, 29], title: "Vinoř", text: "Polní cestou ke kaplím 23 a 24 (stará stezka se tu dochovala jako mez mezi poli), pak přes Vinoř kolem kaple s nápisem Rosa Mystica (č. 26) až ke Svatokřížské kapli u rybníka." },
+  { from: 12.5, to: 17.5, chapels: [22, 29], title: "Vinoř", text: "Polní cestou ke kaplím 23 a 24, pak přes Vinoř kolem kaple s nápisem Rosa Mystica (č. 26) až ke Svatokřížské kapli u rybníka." },
   { from: 17.5, to: 22, chapels: [30, 38], title: "Podolanka – Dřevčice", text: "Nejdelší řada dochovaných kaplí (30, 32, 33, 35, 36 a 38) v otevřené krajině polí. Cesta vede podél silnice, jděte opatrně." },
   { from: 22, to: 26, chapels: [39, 44], title: "Vrábí – Brandýs – Stará Boleslav", text: "Brandýsem kolem kaplí 41 a 42, přes Masarykovo náměstí, pod zámkem přes Labe a do Staré Boleslavi k oběma bazilikám." },
 ];
@@ -620,7 +620,8 @@ function setVisited(n, on) {
 }
 async function share(n) {
   const c = state.byN.get(n);
-  const url = `${location.origin}${location.pathname}#k${n}`;
+  // statická stránka kaple – náhled odkazu pak ukáže její fotku a popis
+  const url = new URL(chapelPath(c), location.origin + location.pathname.replace(/[^/]*$/, "")).href;
   const data = { title: `${n}. ${c.name} · Svatá cesta`, text: `${n}. zastavení Svaté cesty z Prahy do Staré Boleslavi`, url };
   try {
     if (navigator.share) await navigator.share(data);

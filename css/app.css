@@ -347,7 +347,7 @@ a.chapel-row { color: inherit; text-decoration: none; }
 .badge-kolo { background: var(--gold-soft); color: var(--gold); }
 .rc-stats { display: flex; flex-wrap: wrap; align-items: baseline; margin: 12px 0 0 4px; font-size: 14.5px; color: var(--ink-2); }
 .rc-stats span + span::before { content: "·"; margin: 0 8px; color: var(--muted); }
-.rc-stats b { font-family: var(--serif); font-size: 17px; color: var(--accent); }
+.rc-stats b { font-family: var(--sans); font-weight: 700; font-size: 17px; color: var(--accent); }
 .rc-effort { display: inline-flex; align-items: center; gap: 3px; color: var(--ink-2); }
 .rc-effort i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
 .rc-effort i:last-of-type { margin-right: 4px; }
