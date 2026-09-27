@@ -55,13 +55,16 @@ Aplikace přepíná pohledy přes `#hash`, vyhledávače ji tedy vidí jako jedi
 | `modlitby/`, `modlitby/<slug>/`, `modlitby/loretanska-litanie/` | všechny modlitby, každá modlitba zvlášť, litanie s odkazy na kaple |
 | `historie/`, `info/` | text z `index.html` (značky `<!-- build:historie -->`, `<!-- build:info -->`) |
 | `svatovaclavska-pout/` | Národní svatováclavská pouť – kalendář + aktuální program z `events.json` |
-| `404.html`, `sitemap.xml`, `robots.txt` | chybová stránka, mapa webu, pravidla pro roboty |
+| `otazky/` | časté otázky (FAQPage), odpovědi se skládají z dat |
+| `404.html`, `sitemap.xml`, `robots.txt` | chybová stránka, mapa webu s obrázky (`lastmod` se mění jen u stránek, které se opravdu změnily), pravidla pro roboty vč. výslovného povolení AI crawlerů (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, SeznamBot …) |
+| `llms.txt`, `llms-full.txt` | shrnutí webu a celý text průvodce v Markdownu pro AI asistenty ([llmstxt.org](https://llmstxt.org)) |
 
 Skript také přepíše blok `<!-- build:head -->` v hlavičce `index.html` (titulek, popis, canonical, OG, JSON-LD) – ten needitujte ručně. Texty historie, informací a úvodu litanie upravujte v `index.html` mezi značkami `build:…`; úseky cesty v `STAGES` v `js/app.js`. Vygenerované stránky needitujte, přepíšou se.
 
 - `SITE_URL` na začátku skriptu je jediné místo s adresou webu (canonical, `og:*`, sitemap). Odkazy uvnitř stránek jsou relativní, takže web funguje v podadresáři (`/svata-cesta/` na GitHub Pages) i v kořeni domény. Výjimkou je `404.html` s absolutními odkazy.
 - Seznamy v aplikaci (kaple, litanie, úseky, tlačítka tras) jsou skutečné odkazy na tyto stránky; aplikace běžné kliknutí zachytí a otevře detail jako dřív, Ctrl/Cmd+klik otevře statickou stránku.
 - Service worker statické stránky nepředukládá; uloží je při první návštěvě.
+- **IndexNow** (Bing → ChatGPT a Copilot, Seznam, Yandex): po nasazení spusťte `python3 tools/indexnow.py` (oznámí stránky s dnešním `lastmod`; `--all` oznámí všechny). Klíč je soubor `<32 hex>.txt` v kořeni, nemažte ho.
 
 ## Vlastní doména
 
@@ -69,7 +72,7 @@ Skript také přepíše blok `<!-- build:head -->` v hlavičce `index.html` (tit
 2. Do kořene repozitáře přidejte soubor `CNAME` s jediným řádkem `poutdoboleslavi.cz`.
 3. DNS u registrátora: záznamy `A` pro `@` → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153` (případně `AAAA` `2606:50c0:8000::153` … `8003::153`) a `CNAME` pro `www` → `cryptiee.github.io`.
 4. GitHub → Settings → Pages: vyplňte Custom domain, počkejte na certifikát a zapněte **Enforce HTTPS**.
-5. Google Search Console: přidejte doménovou službu (ověření TXT záznamem), odešlete `https://poutdoboleslavi.cz/sitemap.xml`; totéž v Bing Webmaster Tools.
+5. Google Search Console: přidejte doménovou službu (ověření TXT záznamem), odešlete `https://poutdoboleslavi.cz/sitemap.xml`; totéž v Bing Webmaster Tools (z Bingu čerpá vyhledávání ChatGPT a Copilot) a v Seznam Webmaster (webmaster.seznam.cz).
 6. Staré adresy `cryptiee.github.io/svata-cesta/…` GitHub po nastavení domény sám přesměruje.
 
 ## Zdroje a licence

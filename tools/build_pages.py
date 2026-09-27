@@ -8,7 +8,8 @@ samostatné stránky s vlastní adresou, titulkem, popisem, canonical, Open Grap
   trasy/                      varianty tras        trasy/<id>/         detail trasy
   modlitby/                   všechny modlitby     modlitby/<slug>/    jednotlivé modlitby
   modlitby/loretanska-litanie/                     historie/, info/, svatovaclavska-pout/
-  404.html, sitemap.xml, robots.txt
+  otazky/                     časté otázky (FAQPage)
+  404.html, sitemap.xml (s obrázky), robots.txt (vč. AI crawlerů), llms.txt, llms-full.txt
 
 a přepíše blok <!-- build:head --> … <!-- /build:head --> v hlavičce index.html
 (titulek, popis, canonical, OG, JSON-LD).
@@ -214,10 +215,14 @@ def active_specials():
 
 # ---------- JSON-LD ----------
 ORG_ID = PUBLISHER_URL + "#organization"
-ORG = {"@type": "Organization", "@id": ORG_ID, "name": PUBLISHER_NAME, "url": PUBLISHER_URL, "email": PUBLISHER_EMAIL}
+ORG = {"@type": "Organization", "@id": ORG_ID, "name": PUBLISHER_NAME, "url": PUBLISHER_URL, "email": PUBLISHER_EMAIL,
+       "logo": SITE_URL + "icons/icon-512.png"}
+EN_NAME = "Holy Way (Via Sancta) from Prague to Stará Boleslav"
 WEBSITE = {"@type": "WebSite", "@id": SITE_URL + "#website", "url": SITE_URL, "name": SITE_NAME,
-           "alternateName": f"{SITE_NAME} {SITE_TAGLINE}", "inLanguage": "cs", "publisher": {"@id": ORG_ID}}
-TRAIL = {"@type": "Place", "name": "Svatá cesta z Prahy do Staré Boleslavi", "url": SITE_URL}
+           "alternateName": [f"{SITE_NAME} {SITE_TAGLINE}", "Pouť do Staré Boleslavi", "Via Sancta", EN_NAME],
+           "inLanguage": "cs", "publisher": {"@id": ORG_ID}}
+TRAIL = {"@type": "Place", "name": "Svatá cesta z Prahy do Staré Boleslavi", "alternateName": ["Via Sancta", EN_NAME], "url": SITE_URL}
+ROBOTS_META = '<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">'
 
 
 def ld_script(items):
@@ -248,6 +253,7 @@ def head_meta(title, desc, url, og_img, og_alt, og_type="website"):
         f"<title>{esc(title)}</title>",
         f'<meta name="description" content="{esc(desc)}">',
         f'<link rel="canonical" href="{esc(url)}">',
+        ROBOTS_META,
         f'<meta property="og:type" content="{og_type}">',
         f'<meta property="og:site_name" content="{SITE_NAME}">',
         '<meta property="og:locale" content="cs_CZ">',
@@ -277,12 +283,13 @@ def crumbs_html(crumbs, prefix):
 
 def hub_links(prefix):
     links = [("kaple/", "Kaple"), ("trasy/", "Trasy"), ("modlitby/", "Modlitby"), (LITANY_PATH, "Loretánská litanie"),
-             ("historie/", "Historie"), ("info/", "Praktické informace"), ("svatovaclavska-pout/", "Svatováclavská pouť")]
+             ("historie/", "Historie"), ("info/", "Praktické informace"), ("otazky/", "Časté otázky"),
+             ("svatovaclavska-pout/", "Svatováclavská pouť")]
     return "".join(f'<li><a href="{prefix}{p}">{t}</a></li>' for p, t in links)
 
 
 def render(path, *, title, desc, body, section=None, crumbs=None, ld=(), og_img=None, og_alt=None,
-           og_type="website", absolute=False, noindex=False, script=""):
+           og_type="website", absolute=False, noindex=False, script="", extra_meta=""):
     """Složí celou stránku. path = '' | 'kaple/' | 'kaple/26-…/' | '404.html'."""
     depth = path.count("/")
     prefix = SITE_URL if absolute else "../" * depth
@@ -298,8 +305,10 @@ def render(path, *, title, desc, body, section=None, crumbs=None, ld=(), og_img=
         for v, icon, label in TABS)
     meta = head_meta(title, desc, url, og_img, og_alt, og_type)
     if noindex:
-        meta = "\n".join(l for l in meta.splitlines() if 'rel="canonical"' not in l and "og:url" not in l)
+        meta = "\n".join(l for l in meta.splitlines() if 'rel="canonical"' not in l and "og:url" not in l and l != ROBOTS_META)
         meta += '\n<meta name="robots" content="noindex">'
+    if extra_meta:
+        meta += "\n" + extra_meta
     doc = f"""<!doctype html>
 <html lang="cs">
 <head>
@@ -350,12 +359,19 @@ def render(path, *, title, desc, body, section=None, crumbs=None, ld=(), og_img=
         doc = re.sub(r'(<(?:div|article) class="page[^"]*">)', lambda m: m.group(1) + "\n" + nav, doc, count=1)
     out = ROOT / (path if path.endswith(".html") else path + "index.html")
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(doc)
+    if not out.exists() or out.read_text() != doc:
+        out.write_text(doc)
+        CHANGED.add(path)
+    imgs = [og_img] if og_img != OG_DEFAULT[0] else []
+    imgs += re.findall(r'<img [^>]*src="(?:\.\./)*(img/[^"]+)"', body)
+    IMAGES[path] = list(dict.fromkeys(imgs))
     WRITTEN.append((path, title, desc))
     return doc
 
 
 WRITTEN = []
+CHANGED = set()   # stránky, jejichž obsah se tímto buildem změnil → nové <lastmod>
+IMAGES = {}       # obrázky stránky pro image sitemap
 
 
 # ---------- společné kousky ----------
@@ -498,15 +514,17 @@ def chapel_page(c):
            "alternateName": f"{n}. zastavení Svaté cesty", "description": desc, "url": url,
            "geo": {"@type": "GeoCoordinates", "latitude": c["lat"], "longitude": c["lon"]},
            "address": {"@type": "PostalAddress", "addressLocality": c["area"], "addressCountry": "CZ"},
-           "containedInPlace": TRAIL}
+           "containedInPlace": TRAIL, "hasMap": mapy_url(c)}
     if ph:
         ent["image"] = SITE_URL + ph["src"]
     if not lost:
         ent["isAccessibleForFree"] = True
     title = f'{c["name"]} ({n}. zastavení) – Svatá cesta Praha → Stará Boleslav'
+    geo = (f'<meta name="geo.region" content="CZ">\n<meta name="geo.placename" content="{esc(c["area"])}">\n'
+           f'<meta name="geo.position" content="{c["lat"]};{c["lon"]}">\n<meta name="ICBM" content="{c["lat"]}, {c["lon"]}">')
     render(path, title=title, desc=desc, body=body, section="kaple",
            crumbs=[("Svatá cesta", ""), ("Kaple", "kaple/"), (f'{n}. {c["name"]}', path)],
-           ld=[ent], og_img=ph["src"] if ph else None, og_alt=c["name"] if ph else None)
+           ld=[ent], og_img=ph["src"] if ph else None, og_alt=c["name"] if ph else None, extra_meta=geo)
 
 
 def chapels_hub():
@@ -887,6 +905,91 @@ def pout_page():
            og_img="img/bazilika.jpg", og_alt="Bazilika sv. Václava ve Staré Boleslavi", script=UNTIL_SCRIPT)
 
 
+# ---------- časté otázky ----------
+def faq_items(prefix):
+    """(otázka, odpověď – prostý text, odkaz (cesta, text) | None). Čísla se berou z dat."""
+    cela = next(r for r in routes if r["id"] == "cela")
+    kolo = next((r for r in routes if r["mode"] == "kolo"), None)
+    short = [r for r in routes if r["id"] != "cela" and r["mode"] == "pesky"]
+    cnt = {k: sum(1 for c in chapels if c["status"] == k) for k in STATUS_LABEL}
+    nsp = next((e for e in events["recurring"] if "svatováclavská" in e["title"].lower()), None)
+    items = [
+        ("Co je Svatá cesta z Prahy do Staré Boleslavi?",
+         f"Barokní poutní cesta (Via Sancta) z Prahy do Staré Boleslavi, místa mučednické smrti svatého Václava a domova Palladia země "
+         f"české. V letech 1674–1680 ji dali jezuité ozdobit {len(chapels)} výklenkovými kaplemi, tolik, kolik má loretánská litanie invokací.",
+         ("historie/", "Historie Svaté cesty")),
+        ("Jak dlouhá je Svatá cesta a jak dlouho se jde?",
+         f"Celá cesta měří asi {num(round(cela['km']))} km a pěšky trvá {cela['time']} včetně zastávek. Celkové stoupání je asi "
+         f"{cela.get('elevation', 160)} m. {cela.get('notFor', '')}".strip(),
+         ("trasy/cela/", cela["name"])),
+        ("Kde Svatá cesta začíná a kde končí?",
+         f"Začíná u Poříčské brány na náměstí Republiky v Praze ({cela['start']['transport']}) a končí u bazilik ve Staré Boleslavi.",
+         (f"kaple/", "Všech 44 kaplí po pořadí")),
+        ("Kolik kaplí Svaté cesty se dochovalo?",
+         f"Z {len(chapels)} kaplí dnes stojí {cnt['stoji']}, dalších {cnt['replika']} nahradily repliky a {cnt['zanikla']} zaniklo. "
+         f"Na místech mnoha zaniklých kaplí stojí očíslované dřevěné kříže.",
+         ("kaple/", "Přehled kaplí")),
+        ("Existuje kratší varianta Svaté cesty?",
+         "Ano. " + " ".join(f"{r['name']}: {fmt_km(r['km'])}, {r['time']}, start {r['start']['name']}." for r in short),
+         ("trasy/", "Všechny trasy")),
+    ]
+    if kolo:
+        items.append(("Dá se Svatá cesta projet na kole?",
+                      f"Ano. {kolo['name']} měří {fmt_km(kolo['km'])} a trvá {kolo['time']}." + (f" Povrch: {kolo['surface']}." if kolo.get("surface") else ""),
+                      (f"trasy/{kolo['id']}/", kolo["name"])))
+    items += [
+        ("Jak se dostanu ze Staré Boleslavi zpět do Prahy?",
+         "Ze Staré Boleslavi a Brandýsa nad Labem jezdí autobusy PID do Prahy, například na Černý Most nebo do Letňan. "
+         "Aktuální spojení najdete na pid.cz nebo idos.cz.", ("info/", "Praktické informace")),
+        ("Kde se po cestě najíst a napít?", cela.get("breaks", ""), ("info/", "Tipy na cestu")),
+    ]
+    if nsp:
+        items.append(("Kdy je Národní svatováclavská pouť do Staré Boleslavi?",
+                      f"Každý rok {nsp['date']} ve Staré Boleslavi. {nsp['text']}", ("svatovaclavska-pout/", "Program pouti")))
+    items += [
+        ("Kdy je nejlepší vydat se na Svatou cestu?",
+         "Kdykoli během roku. Zvláštní význam mají tyto dny: " +
+         "; ".join(f"{e['date']} {e['title']}" for e in events["recurring"]) + ".",
+         ("info/", "Kalendář poutí")),
+        ("Proč má Svatá cesta právě 44 kaplí?",
+         f"Každá kaple odpovídá jedné ze {len(prayers['litany'])} invokací loretánské litanie ve znění ze 17. století a připomíná jedno "
+         "české nebo moravské mariánské poutní místo. Poutníci se u každé kaple modlí příslušnou invokaci a Zdrávas Maria.",
+         (LITANY_PATH, "Loretánská litanie ke kaplím")),
+        ("Funguje průvodce bez signálu?",
+         "Ano. Průvodce je zdarma a jde přidat na plochu telefonu. Texty, modlitby a fotografie jsou pak k dispozici i offline, "
+         "mapa se uloží pro oblasti, které si jednou prohlédnete. Navštívené kaple si můžete odškrtávat.", ("", "Otevřít mapu")),
+    ]
+    return items
+
+
+FAQ_PATH = "otazky/"
+
+
+def faq_page():
+    prefix = "../"
+    items = faq_items(prefix)
+    qa = "".join(
+        f'<section class="faq-item"><h2 class="sp-h">{esc(q)}</h2><p>{esc(a)}'
+        + (f' <a href="{prefix}{lp}">{esc(lt)} ›</a>' if link else "") + "</p></section>"
+        for q, a, link in items for lp, lt in [link or ("", "")])
+    body = f"""<article class="page prose">
+<header class="page-head">
+  <p class="eyebrow">Svatá cesta · Via Sancta</p>
+  <h1>Časté otázky o&nbsp;Svaté cestě</h1>
+  <p class="lead">Krátké odpovědi na to, na co se poutníci ptají nejčastěji: délka, začátek a&nbsp;konec cesty, kratší varianty, kolo, doprava zpět a&nbsp;svatováclavská pouť.</p>
+</header>
+{qa}
+<div class="sp-lead-actions"><a class="btn btn-primary" href="{prefix}"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-map"/></svg>Otevřít mapu Svaté cesty</a><a class="btn btn-ghost" href="{prefix}info/">Praktické informace</a></div>
+</article>"""
+    ld = {"@type": "FAQPage", "@id": SITE_URL + FAQ_PATH + "#faq", "url": SITE_URL + FAQ_PATH, "inLanguage": "cs",
+          "isPartOf": {"@id": SITE_URL + "#website"}, "about": TRAIL,
+          "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a, _ in items]}
+    desc = "Časté otázky o Svaté cestě z Prahy do Staré Boleslavi: jak je dlouhá, kde začíná, kratší trasy, kolo, cesta zpět a Národní svatováclavská pouť."
+    render(FAQ_PATH, title="Časté otázky – Svatá cesta z Prahy do Staré Boleslavi", desc=clip(desc), body=body, section="info",
+           crumbs=[("Svatá cesta", ""), ("Časté otázky", FAQ_PATH)], ld=[WEBSITE, ORG, ld])
+    return items
+
+
 # ---------- 404 ----------
 def page_404():
     body = f"""<div class="page">
@@ -923,25 +1026,148 @@ def home_head():
     if out != INDEX:
         (ROOT / "index.html").write_text(out)
         INDEX = out
+        CHANGED.add("")
+    IMAGES[""] = [OG_DEFAULT[0]]
     WRITTEN.append(("", title, desc))
 
 
 # ---------- sitemap, robots, úklid ----------
+# Roboti vyhledávačů a AI asistentů, kterým web výslovně povoluje přístup (ChatGPT, Claude, Perplexity,
+# Gemini, Copilot, Apple Intelligence, Seznam …). Výčet je jen signál – „User-agent: *“ platí pro všechny ostatní.
+AI_BOTS = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-User", "Claude-SearchBot", "anthropic-ai",
+           "PerplexityBot", "Perplexity-User", "Google-Extended", "GoogleOther", "Applebot", "Applebot-Extended",
+           "Bingbot", "DuckAssistBot", "Amazonbot", "meta-externalagent", "MistralAI-User", "cohere-ai", "CCBot",
+           "YouBot", "SeznamBot"]
+
+
 def sitemap():
-    urls = [p for p, _, _ in WRITTEN if not p.endswith(".html")]
-    xml = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    for p in sorted(set(urls), key=lambda p: (p != "", p.count("/"), p)):
-        xml.append(f"  <url><loc>{esc(SITE_URL + p)}</loc><lastmod>{TODAY.isoformat()}</lastmod></url>")
+    urls = sorted({p for p, _, _ in WRITTEN if not p.endswith(".html")}, key=lambda p: (p != "", p.count("/"), p))
+    try:
+        old = dict(re.findall(r"<loc>(.*?)</loc>\s*<lastmod>(.*?)</lastmod>", (ROOT / "sitemap.xml").read_text()))
+    except OSError:
+        old = {}
+    today = TODAY.isoformat()
+    mod = {p: today if p in CHANGED or SITE_URL + p not in old else old[SITE_URL + p] for p in urls}
+    # úvodní stránka = aplikace: změní se i úpravou index.html, app.js nebo CSS mimo build
+    app_mtime = max(datetime.date.fromtimestamp((ROOT / f).stat().st_mtime) for f in ("index.html", "js/app.js", "css/app.css"))
+    mod[""] = max([mod.get("", today), app_mtime.isoformat()] + list(mod.values()))
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">']
+    for p in urls:
+        imgs = "".join(f"<image:image><image:loc>{esc(SITE_URL + i)}</image:loc></image:image>" for i in IMAGES.get(p, []))
+        xml.append(f"  <url><loc>{esc(SITE_URL + p)}</loc><lastmod>{mod[p]}</lastmod>{imgs}</url>")
     xml.append("</urlset>")
     (ROOT / "sitemap.xml").write_text("\n".join(xml) + "\n")
-    (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {SITE_URL}sitemap.xml\n")
-    return len(set(urls))
+    robots = ["# Vyhledávače i AI asistenti jsou vítáni – obsah průvodce smí číst, citovat a odkazovat.",
+              f"# Shrnutí webu pro jazykové modely: {SITE_URL}llms.txt (celý text: {SITE_URL}llms-full.txt)", "",
+              "User-agent: *", "Allow: /", ""]
+    for b in AI_BOTS:
+        robots += [f"User-agent: {b}", "Allow: /", ""]
+    robots.append(f"Sitemap: {SITE_URL}sitemap.xml")
+    (ROOT / "robots.txt").write_text("\n".join(robots) + "\n")
+    return len(urls)
+
+
+# ---------- llms.txt (shrnutí pro AI asistenty, https://llmstxt.org) ----------
+def html_to_md(frag):
+    """Hrubý převod HTML fragmentu (už s absolutními odkazy) na Markdown."""
+    t = re.sub(r"<!--.*?-->", "", frag, flags=re.S)
+    t = re.sub(r"<(script|style|svg|figure)\b.*?</\1>", "", t, flags=re.S)
+    t = re.sub(r"<h[1-6][^>]*>(.*?)</h[1-6]>", lambda m: "\n\n### " + m.group(1) + "\n\n", t, flags=re.S)
+    t = re.sub(r'<a [^>]*href="([^"]+)"[^>]*>(.*?)</a>', lambda m: f"[{m.group(2)}]({m.group(1)})", t, flags=re.S)
+    t = re.sub(r"<li[^>]*>", "\n- ", t)
+    t = re.sub(r"<(strong|b)>(.*?)</\1>", r"**\2**", t, flags=re.S)
+    t = re.sub(r"</(p|div|ul|ol|dl|section|header)>|<br\s*/?>", "\n\n", t)
+    t = re.sub(r"<(dt)[^>]*>", "\n\n", t)
+    t = re.sub(r"<span[^>]*>", " ", t)
+    t = re.sub(r"<[^>]+>", "", t)
+    t = html.unescape(t).replace("\xa0", " ")
+    t = re.sub(r"[ \t]+", " ", t)
+    t = re.sub(r"\n[ \t]+", "\n", t)
+    t = re.sub(r"\[\s+", "[", t)
+    return re.sub(r"\n{3,}", "\n\n", t).strip()
+
+
+def llms(faq):
+    cela = next(r for r in routes if r["id"] == "cela")
+    cnt = {k: sum(1 for c in chapels if c["status"] == k) for k in STATUS_LABEL}
+    summary = (f"Průvodce poutníka po Svaté cestě (Via Sancta), barokní poutní cestě z Prahy do Staré Boleslavi. "
+               f"Asi {num(round(cela['km']))} km od Poříčské brány k bazilikám ve Staré Boleslavi, {len(chapels)} výklenkových kaplí "
+               f"z let 1674–1680 ({cnt['stoji']} stojí, {cnt['replika']} replik, {cnt['zanikla']} zaniklých), interaktivní mapa, "
+               f"{len(routes)} tras pěšky i na kole, modlitby, loretánská litanie, historie a kalendář poutí.")
+    english = (f"English: {SITE_URL} is a free Czech-language pilgrim guide to the Holy Way (Via Sancta), a Baroque pilgrimage route "
+               f"(~{round(cela['km'])} km) from Prague to Stará Boleslav, where St. Wenceslas was martyred and the Palladium of Bohemia "
+               f"is kept. It covers all {len(chapels)} wayside chapels built by the Jesuits in 1674–1680 (one for each invocation of the "
+               f"Litany of Loreto), walking and cycling routes, prayers, history and the National St. Wenceslas Pilgrimage (28 September).")
+    link = lambda path, name, note="": f"- [{name}]({SITE_URL}{path})" + (f": {note}" if note else "")
+    out = [f"# {SITE_NAME} z Prahy do Staré Boleslavi (Via Sancta)", "", f"> {summary}", "", english, "",
+           f"Web provozuje {PUBLISHER_NAME} ({PUBLISHER_URL}), kontakt {PUBLISHER_EMAIL}. Nekomerční projekt, obsah je zdarma. "
+           f"Při citování prosím odkazujte na konkrétní stránku.", "",
+           "## Hlavní stránky", "",
+           link("", "Interaktivní mapa", "mapa trasy a všech 44 kaplí, navigace „Kde jsem“"),
+           link(FAQ_PATH, "Časté otázky", "délka, začátek a konec, kratší trasy, kolo, doprava zpět"),
+           link("trasy/", "Trasy", ", ".join(f"{r['name']} ({fmt_km(r['km'])})" for r in routes)),
+           link("kaple/", "Kaple", "přehled všech 44 zastavení po úsecích"),
+           link("historie/", "Historie", "sv. Václav, Palladium země české, jezuité, zánik a obnova kaplí"),
+           link("info/", "Praktické informace", "úseky cesty, tipy, doprava, kalendář poutí, zdroje"),
+           link("svatovaclavska-pout/", "Národní svatováclavská pouť", "28. září ve Staré Boleslavi"),
+           link("modlitby/", "Modlitby", "modlitby na pouť"), link(LITANY_PATH, "Loretánská litanie", "44 invokací ke 44 kaplím"),
+           "", "## Trasy", ""]
+    out += [link(f"trasy/{r['id']}/", r["name"], route_desc(r)) for r in routes]
+    out += ["", "## Kaple", ""]
+    out += [link(chapel_path(c), f"{c['n']}. {c['name']}", f"{c['area']}, km {num(c['km'])}, {status_label(c)}") for c in chapels]
+    out += ["", "## Modlitby", ""]
+    out += [link(prayer_path(x), x["title"]) for x in prayers["prayers"]]
+    out += ["", "## Optional", "", f"- [Celý text průvodce v jednom souboru]({SITE_URL}llms-full.txt)",
+            f"- [Mapa webu]({SITE_URL}sitemap.xml)"]
+    (ROOT / "llms.txt").write_text("\n".join(out) + "\n")
+
+    # llms-full.txt – celý obsah průvodce jako Markdown
+    full = out[:out.index("## Hlavní stránky")]
+    full += ["## Časté otázky", ""]
+    for q, a, _ in faq:
+        full += [f"### {q}", "", a, ""]
+    full += ["## Trasy", ""]
+    for r in routes:
+        full += [f"### {r['name']}", "", f"URL: {SITE_URL}trasy/{r['id']}/", "",
+                 f"- Délka: {fmt_km(r['km'])}, čas: {r['time']}, {MODE_LABEL[r['mode']]}, obtížnost: {r['difficulty']}"
+                 + (f", stoupání {r['elevation']} m" if r.get("elevation") is not None else ""),
+                 f"- Start: {r['start']['name']} ({r['start']['transport']}); cíl: {r['end']['name']}",
+                 f"- Pro koho: {', '.join(r.get('suitableFor', []))}"]
+        full += [f"- {t}: {r[k]}" for t, k in (("Povrch", "surface"), ("Pozor", "notFor"), ("Občerstvení", "breaks"), ("Zkrácení", "bailout")) if r.get(k)]
+        full += [f"- Kaple na trase: {', '.join(str(n) for n in r['chapels'])}", "", r["text"], ""]
+    full += ["## Kaple", ""]
+    for c in chapels:
+        la, cs = prayers["litany"][c["n"] - 1]
+        full += [f"### {c['n']}. {c['name']}", "", f"URL: {SITE_URL}{chapel_path(c)}", "",
+                 f"- Stav: {status_label(c)}; {c['area']}, km {num(c['km'])} od Poříčské brány; GPS {c['lat']}, {c['lon']}",
+                 f"- Poutní místo: {c['place']}; mariánský obraz: {c['image']}", f"- Donátor: {c['donor']}",
+                 f"- Invokace loretánské litanie: {la} – {cs}, oroduj za nás", "", c["text"], ""]
+    full += ["## Historie", "", html_to_md(relink(block("historie"), SITE_URL, {"info": SITE_URL + "info/#zdroje"})), ""]
+    info = relink(block("info"), SITE_URL, {"zdroje": SITE_URL + "info/#zdroje"})
+    info = re.sub(r'<ol class="stages" id="stages"></ol>', "<ul>" + "".join(
+        f"<li>km {num(st['from'])}–{num(st['to'])}, {esc(st['title'])} (kaple {st['chapels'][0]}–{st['chapels'][1]}): {esc(st['text'])}</li>"
+        for st in STAGES or []) + "</ul>", info)
+    info = info.replace('<ul class="calendar" id="calendar"></ul>', "<ul>" + "".join(
+        f"<li>{esc(e['date'])} – {esc(e['title'])}: {esc(e['text'])}</li>" for e in events["recurring"]) + "</ul>")
+    full += ["## Praktické informace", "", html_to_md(info), ""]
+    full += ["## Modlitby", "", prayers["howto"], ""]
+    for x in prayers["prayers"]:
+        full += [f"### {x['title']}", ""] + ([f"_{x['when']}_", ""] if x.get("when") else []) + [x["text"], ""]
+    full += [f"### {html_to_md(LITANY_TITLE)}", "", f"URL: {SITE_URL}{LITANY_PATH}", ""]
+    full += [f"{i + 1}. {cs} – oroduj za nás ({la}; kaple {byN[i + 1]['name']})" for i, (la, cs) in enumerate(prayers["litany"])]
+    full += ["", "## Zdroje a licence", "",
+             "Údaje o kaplích: Wikipedie, Poutní cesta z Prahy do Staré Boleslavi (CC BY-SA 4.0), OpenStreetMap (ODbL), "
+             "svata-cesta.cz, via-sancta.cz; texty jsou napsány vlastními slovy. Fotografie: Wikimedia Commons. "
+             "Polohy zaniklých kaplí jsou pravděpodobné, ne jisté.", ""]
+    txt = re.sub(r"\n{3,}", "\n\n", "\n".join(full))
+    (ROOT / "llms-full.txt").write_text(txt)
 
 
 def cleanup():
     """Smaže dříve vygenerované stránky, které už neexistují (např. po přejmenování kaple)."""
     keep = {(ROOT / (p + "index.html")).resolve() for p, _, _ in WRITTEN if not p.endswith(".html")}
-    for d in ("kaple", "trasy", "modlitby", "historie", "info", "svatovaclavska-pout"):
+    for d in ("kaple", "trasy", "modlitby", "historie", "info", "otazky", "svatovaclavska-pout"):
         for f in sorted((ROOT / d).rglob("index.html"), reverse=True) if (ROOT / d).exists() else []:
             if f.resolve() not in keep and GENERATED in f.read_text():
                 f.unlink()
@@ -966,10 +1192,12 @@ def main():
     history_page()
     info_page()
     pout_page()
+    faq = faq_page()
     page_404()
     home_head()
     cleanup()
     n = sitemap()
+    llms(faq)
     long = [(p, len(d)) for p, _, d in WRITTEN if len(d) > 160]
     titles = [t for _, t, _ in WRITTEN]
     print(f"{len(WRITTEN)} stránek (+ index.html), sitemap: {n} adres, SITE_URL = {SITE_URL}")
