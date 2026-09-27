@@ -329,7 +329,9 @@ async function syncWakeLock() {
 function geoDeniedHelp() {
   const ua = navigator.userAgent;
   if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1))
-    return "Poloha je zakázaná. V Safari klepněte na „aA“ v adresním řádku → Nastavení webu → Poloha → Povolit. Pokud to nepomůže: Nastavení iPhonu → Soukromí → Polohové služby → Weby Safari → Při používání.";
+    return /CriOS|FxiOS|EdgiOS/.test(ua)
+      ? "Poloha je zakázaná. Otevřete Nastavení iPhonu → Aplikace → váš prohlížeč → Poloha → Při používání. Pak stránku obnovte a klepněte na tlačítko polohy znovu."
+      : "Poloha je zakázaná. Otevřete Nastavení iPhonu → Aplikace → Safari → Poloha → Zeptat se nebo Povolit (a v Soukromí → Polohové služby musí být zapnuté Weby Safari). Pak stránku obnovte a klepněte na tlačítko polohy znovu.";
   if (/Android/.test(ua))
     return "Poloha je zakázaná. Klepněte na ikonu vlevo v adresním řádku → Oprávnění → Poloha → Povolit. Zkontrolujte také, že je v telefonu zapnutá Poloha.";
   return "Přístup k poloze je zakázaný. Povolte ho v nastavení webu (ikona vlevo v adresním řádku).";
