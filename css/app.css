@@ -167,6 +167,8 @@ main { padding-top: calc(var(--topbar-h) + env(safe-area-inset-top, 0px)); }
 .fab svg { width: 24px; height: 24px; }
 .fab.is-on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .fab.is-wait svg { animation: pulse 1s ease-in-out infinite; }
+/* poloha zapnutá, ale mapa nesleduje: jen barevná ikona */
+.fab.is-on.is-track { background: var(--card); color: var(--accent); border-color: var(--accent); }
 @keyframes pulse { 50% { opacity: .35; } }
 
 .layers-menu {

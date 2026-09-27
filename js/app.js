@@ -236,6 +236,8 @@ function initMap() {
   });
   map.on("click", () => { $("#layers-menu").hidden = true; $("#btn-layers").classList.remove("is-on"); });
   $("#btn-locate").addEventListener("click", toggleLocate);
+  // posunutí mapy prstem vypne sledování polohy (poloha se ale dál ukazuje)
+  map.on("dragstart", () => setFollow(false));
   $("#pc-next").addEventListener("click", () => state.nextN && (focusChapel(state.nextN), openChapel(state.nextN)));
 
   // Uvítání
@@ -256,6 +258,7 @@ function refreshMarker(n) {
   m.setIcon(L.divIcon({ className: "", html: markerHTML(c), iconSize: [size, size], iconAnchor: [size / 2, size / 2] }));
 }
 function fitRoute(animate = true) {
+  setFollow(false);
   const wide = matchMedia("(min-width: 900px)").matches;
   // na mobilu nahoře překáží čip trasy a pilulka akce, vpravo tlačítka mapy
   const top = $(".map-top").getBoundingClientRect().bottom - state.map.getContainer().getBoundingClientRect().top;
@@ -269,6 +272,7 @@ function focusChapel(n, animate = true) {
   const c = state.byN.get(n);
   const map = state.map;
   if (!map) return;
+  setFollow(false);
   const z = Math.max(map.getZoom(), 16);
   let target = L.latLng(c.lat, c.lon);
   // na desktopu je vpravo panel s detailem – posuň kapli do volné části mapy
@@ -279,12 +283,30 @@ function focusChapel(n, animate = true) {
 }
 
 /* ============ Poloha ============ */
+// Tlačítko polohy má tři stavy: vypnuto → sleduje (mapa jde s poutníkem) → jen ukazuje (po posunutí mapy).
+// Klepnutí ve stavu „jen ukazuje“ mapu znovu vycentruje a zapne sledování, ve stavu „sleduje“ polohu vypne.
+function setFollow(on) {
+  const btn = $("#btn-locate");
+  if (!btn) return;
+  on = on && state.watchId != null;
+  state.follow = on;
+  btn.classList.toggle("is-follow", on);
+  btn.classList.toggle("is-track", state.watchId != null && !on);
+  btn.setAttribute("aria-label", state.watchId == null ? "Zobrazit mou polohu" : on ? "Vypnout polohu" : "Sledovat mou polohu");
+  btn.title = state.watchId == null ? "Kde jsem?" : on ? "Mapa vás sleduje – klepnutím polohu vypnete" : "Znovu sledovat mou polohu";
+}
 function toggleLocate() {
   const btn = $("#btn-locate");
+  if (state.watchId != null && !state.follow && state.me) {
+    setFollow(true);
+    state.map.setView([state.me.lat, state.me.lon], Math.max(state.map.getZoom(), 16));
+    return;
+  }
   if (state.watchId != null) {
     navigator.geolocation.clearWatch(state.watchId);
     state.watchId = null;
     btn.classList.remove("is-on", "is-wait");
+    setFollow(false);
     state.meMarker && state.map.removeLayer(state.meMarker);
     state.meCircle && state.map.removeLayer(state.meCircle);
     state.meMarker = state.meCircle = null;
@@ -300,13 +322,21 @@ function toggleLocate() {
     (pos) => {
       btn.classList.remove("is-wait");
       btn.classList.add("is-on");
+      if (first) {
+        setFollow(true);
+        if (!store.get("vs-follow-hint", false)) {
+          store.set("vs-follow-hint", true);
+          setTimeout(() => toast("Mapa vás sleduje. Posunutím mapy sledování vypnete, tlačítkem polohy ho zase zapnete."), 1200);
+        }
+      }
       onPosition(pos, first);
       first = false;
     },
     (err) => {
-      btn.classList.remove("is-wait", "is-on");
+      btn.classList.remove("is-wait", "is-on", "is-track");
       navigator.geolocation.clearWatch(state.watchId);
       state.watchId = null;
+      setFollow(false);
       toast(err.code === 1 ? "Přístup k poloze je zakázaný. Povolte ho v nastavení prohlížeče." : "Polohu se nepodařilo zjistit.");
     },
     { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
@@ -328,6 +358,8 @@ function onPosition(pos, first) {
   const onRoute = proj.d < 1500;
   state.meKm = onRoute ? proj.along / 1000 : null;
   if (first) state.map.setView(ll, onRoute ? 16 : Math.min(state.map.getZoom(), 13));
+  // na pozadí (zhasnutý displej) se animace nedokončí – posuň mapu hned
+  else if (state.follow) state.map.panTo(ll, { animate: !document.hidden });
 
   // Další kaple (state.stops = kaple na aktivní trase a jejich km podél ní)
   let next, nextKm;
