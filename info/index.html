@@ -49,7 +49,7 @@
 <div class="view-page">
 <div class="page prose">
 <nav class="crumbs" aria-label="Drobečková navigace"><ol><li><a href="../">Svatá cesta</a></li><li><span aria-current="page">Praktické informace</span></li></ol></nav>
-<section class="event-card" data-until="2026-09-28T23:59:00+02:00"><p class="eyebrow">Právě se chystá</p><h2>Národní svatováclavská pouť 2026</h2><p class="ev-sub">26.–28. září 2026 · Stará Boleslav</p><p class="ev-note"><a href="../svatovaclavska-pout/">Program pouti ›</a></p></section>
+<section class="event-card" data-until="2026-09-28T23:59:00+02:00" data-start="2026-09-26" data-end="2026-09-28"><p class="eyebrow ev-when">Právě se chystá</p><h2>Národní svatováclavská pouť 2026</h2><p class="ev-sub">26.–28. září 2026 · Stará Boleslav</p><p class="ev-note"><a href="../svatovaclavska-pout/">Program pouti ›</a></p></section>
 <header class="page-head">
   <p class="eyebrow">Praktické informace</p>
   <h1>Na pouť</h1>
@@ -159,6 +159,6 @@
   <symbol id="i-prev" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-next" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </svg>
-<script>document.querySelectorAll("[data-until]").forEach(function(e){if(new Date()>new Date(e.getAttribute("data-until")))e.hidden=true;});</script>
+<script>document.querySelectorAll("[data-until]").forEach(function(e){if(new Date()>new Date(e.getAttribute("data-until")))e.hidden=true;});(function(){var d=new Date(),t=d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);document.querySelectorAll(".event-card[data-start]").forEach(function(c){var w=c.querySelector(".ev-when");if(w&&t>=c.getAttribute("data-start")&&t<=c.getAttribute("data-end"))w.textContent="Právě probíhá";c.querySelectorAll("[data-date]").forEach(function(h){if(h.getAttribute("data-date")===t){h.classList.add("is-today");h.textContent+=" · dnes";}});});})();</script>
 </body>
 </html>

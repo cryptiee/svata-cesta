@@ -588,13 +588,21 @@ def route_meta(r):
             f'<span class="rc-effort effort-{r["effort"]}" title="obtížnost {r["effort"]} ze 3"><i></i><i></i><i></i>{esc(r["difficulty"])}</span></div>')
 
 
+def standing_text(k):
+    if k == 1:
+        return "1 stojící kaple či replika"
+    if 2 <= k <= 4:
+        return f"{k} stojící kaple a&nbsp;repliky"
+    return f"{k} stojících kaplí a&nbsp;replik"
+
+
 def route_where(r, prefix):
     standing = sum(1 for n in r["chapels"] if byN[n]["status"] != "zanikla")
     mass = (f' · <a href="{MSE}/kostely/sv-petra-na-porici" target="_blank" rel="noopener">mše u sv. Petra na Poříčí</a>'
             if r["id"] in ("cela", "kolo") else "")
     return (f'<dl class="rc-where"><div><dt>Start</dt><dd>{esc(r["start"]["name"])} · {esc(r["start"]["transport"])}{mass}</dd></div>'
             f'<div><dt>Cíl</dt><dd>{esc(r["end"]["name"])}</dd></div>'
-            f'<div><dt>Kaple</dt><dd>{len(r["chapels"])} zastavení, z&nbsp;toho {standing} stojících kaplí a&nbsp;replik</dd></div></dl>')
+            f'<div><dt>Kaple</dt><dd>{len(r["chapels"])} zastavení, z&nbsp;toho {standing_text(standing)}</dd></div></dl>')
 
 
 def route_practical(r):
@@ -668,7 +676,7 @@ def routes_hub():
         {"@type": "ListItem", "position": i + 1, "item": trip_ld(r, False)} for i, r in enumerate(routes)]}
     kms = sorted(r["km"] for r in routes)
     desc = (f'{len(routes)} tras po Svaté cestě z Prahy do Staré Boleslavi pěšky i na kole, od {fmt_km(kms[0])} do {fmt_km(kms[-1])}: '
-            ', '.join(r["short"].lower() if r["short"].startswith("Z ") else r["short"] for r in routes[1:]) + '.')
+            ', '.join(r["short"][:1].lower() + r["short"][1:] for r in routes[1:]) + '.')
     render("trasy/", title="Trasy Svaté cesty – pěšky i na kole z Prahy do Staré Boleslavi", desc=clip(desc), body=body,
            section="trasy", crumbs=[("Svatá cesta", ""), ("Trasy", "trasy/")], ld=[WEBSITE, ORG, lst])
 
@@ -803,11 +811,17 @@ def special_link(prefix):
     if not sp:
         return ""
     ev = sp[0]
-    return (f'<section class="event-card" data-until="{esc(ev["showUntil"])}"><p class="eyebrow">Právě se chystá</p><h2>{esc(ev["title"])}</h2>'
+    return (f'<section class="event-card" data-until="{esc(ev["showUntil"])}" data-start="{esc(ev["startDate"])}" data-end="{esc(ev["endDate"])}">'
+            f'<p class="eyebrow ev-when">Právě se chystá</p><h2>{esc(ev["title"])}</h2>'
             f'<p class="ev-sub">{esc(ev["subtitle"])}</p><p class="ev-note"><a href="{prefix}svatovaclavska-pout/">Program pouti ›</a></p></section>')
 
 
-UNTIL_SCRIPT = '<script>document.querySelectorAll("[data-until]").forEach(function(e){if(new Date()>new Date(e.getAttribute("data-until")))e.hidden=true;});</script>'
+UNTIL_SCRIPT = ('<script>document.querySelectorAll("[data-until]").forEach(function(e){if(new Date()>new Date(e.getAttribute("data-until")))e.hidden=true;});'
+                # statické stránky: „právě probíhá“ a dnešní den programu
+                '(function(){var d=new Date(),t=d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);'
+                'document.querySelectorAll(".event-card[data-start]").forEach(function(c){var w=c.querySelector(".ev-when");'
+                'if(w&&t>=c.getAttribute("data-start")&&t<=c.getAttribute("data-end"))w.textContent="Právě probíhá";'
+                'c.querySelectorAll("[data-date]").forEach(function(h){if(h.getAttribute("data-date")===t){h.classList.add("is-today");h.textContent+=" · dnes";}});});})();</script>')
 
 
 def info_page():
@@ -847,10 +861,11 @@ def event_dates(ev):
 
 
 def event_card(ev):
-    days = "".join(f'<h3 class="ev-day">{esc(d["day"])}</h3><ul>' + "".join(
+    days = "".join(f'<h3 class="ev-day" data-date="{esc(d.get("date", ""))}">{esc(d["day"])}</h3><ul>' + "".join(
         f'<li class="{"hl" if len(it) > 2 and it[2] else ""}"><b>{esc(it[0])}</b><span>{esc(it[1])}</span></li>' for it in d["items"]) + "</ul>"
         for d in ev["days"])
-    return (f'<section class="event-card" data-until="{esc(ev["showUntil"])}"><p class="eyebrow">Program</p><h2>{esc(ev["title"])}</h2>'
+    return (f'<section class="event-card" data-until="{esc(ev["showUntil"])}" data-start="{esc(ev["startDate"])}" data-end="{esc(ev["endDate"])}">'
+            f'<p class="eyebrow">Program</p><h2>{esc(ev["title"])}</h2>'
             f'<p class="ev-sub">{esc(ev["subtitle"])}</p>{days}'
             f'<p class="ev-note">{esc(ev["note"])} <a href="{esc(ev["source"])}" target="_blank" rel="noopener">Oficiální program ›</a></p></section>')
 
@@ -877,6 +892,12 @@ def pout_page():
 <h2 class="sp-h">Pěšky nebo na kole z&nbsp;Prahy</h2>
 <p>Do Staré Boleslavi vede Svatá cesta se 44 barokními kaplemi. Můžete jít celou cestu od Poříčské brány, nebo si vybrat kratší variantu:</p>
 <ul class="links">{route_items}</ul>
+<h2 class="sp-h">Na cestu</h2>
+<ul>
+<li><strong>Za tmy podél silnice:</strong> kdo jde na ranní mši z&nbsp;Prahy, prochází úsek Vinoř – Brandýs ještě za šera. Cesta vede z&nbsp;velké části podél silnice, jděte proti směru jízdy a&nbsp;vezměte si reflexní vestu a&nbsp;čelovku.</li>
+<li><strong>Voda a jídlo:</strong> v&nbsp;polních úsecích nic není, obchody jsou v&nbsp;Kbelích, ve Vinoři a&nbsp;v&nbsp;Brandýse.</li>
+<li><strong>Zpět do Prahy:</strong> ze Staré Boleslavi a&nbsp;Brandýsa jezdí autobusy PID (např. na Černý Most nebo do Letňan). Po poutní mši bývají plné, počítejte s&nbsp;čekáním. Spojení najdete na <a href="https://pid.cz" target="_blank" rel="noopener">pid.cz</a> nebo <a href="https://idos.cz" target="_blank" rel="noopener">idos.cz</a>.</li>
+</ul>
 <div class="sp-lead-actions"><a class="btn btn-primary" href="{prefix}"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-map"/></svg>Otevřít mapu Svaté cesty</a><a class="btn btn-ghost" href="{prefix}info/">Praktické informace</a></div>
 <h2 class="sp-h">Modlitby na pouť</h2>
 <ul class="links">{pray}</ul>

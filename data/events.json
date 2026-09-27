@@ -35,18 +35,20 @@
       "days": [
         {
           "day": "Neděle 27. 9.",
+          "date": "2026-09-27",
           "items": [
             ["19.00", "Příjezd relikvie sv. Václava před baziliku sv. Václava; Svatováclavský koncert a nešpory v bazilice"]
           ]
         },
         {
           "day": "Pondělí 28. 9.",
+          "date": "2026-09-28",
           "items": [
             ["7.00", "Ranní chvály – bazilika sv. Václava"],
             ["7.30, 8.30", "Mše svatá – bazilika sv. Václava"],
             ["9.15", "Modlitba růžence – Mariánské náměstí"],
-            ["10.00", "Poutní mše svatá – Mariánské náměstí; hlavní celebrant Mons. Stanislav Přibyl, arcibiskup pražský", true],
             ["9.30–16.30", "Možnost uctít relikvie sv. Václava v bazilice"],
+            ["10.00", "Poutní mše svatá – Mariánské náměstí; hlavní celebrant Mons. Stanislav Přibyl, arcibiskup pražský", true],
             ["14.00", "Modlitba chval s požehnáním – bazilika Nanebevzetí Panny Marie"],
             ["14.00", "Modlitba za národ před Palladiem země české v kostele sv. Klimenta, poté do 16.00 možnost zhlédnout Palladium"],
             ["17.00", "Odjezd relikvie sv. Václava na Pražský hrad"],

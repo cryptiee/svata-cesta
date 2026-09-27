@@ -72,6 +72,8 @@ function projectOnRoute(lat, lon) {
 }
 const fmtDist = (m) => (m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(m < 10000 ? 1 : 0).replace(".", ",")} km`);
 const fmtKm = (km) => `${String(km.toFixed(1)).replace(".", ",")} km`;
+const numCs = (x) => String(x).replace(".", ",");
+const standingText = (k) => (k === 1 ? "1 stojící kaple či replika" : k >= 2 && k <= 4 ? `${k} stojící kaple a repliky` : `${k} stojících kaplí a replik`);
 
 /* ============ Data ============ */
 async function loadJSON(url) {
@@ -255,10 +257,12 @@ function refreshMarker(n) {
 }
 function fitRoute(animate = true) {
   const wide = matchMedia("(min-width: 900px)").matches;
+  // na mobilu nahoře překáží čip trasy a pilulka akce, vpravo tlačítka mapy
+  const top = $(".map-top").getBoundingClientRect().bottom - state.map.getContainer().getBoundingClientRect().top;
   state.map.fitBounds(state.routeLine.getBounds(), {
     animate: animate === true,
-    paddingTopLeft: wide ? [60, 80] : [22, 70],
-    paddingBottomRight: wide ? [60, 40] : [22, 22],
+    paddingTopLeft: wide ? [60, 80] : [30, Math.max(70, top + 20)],
+    paddingBottomRight: wide ? [60, 40] : [72, 30],
   });
 }
 function focusChapel(n, animate = true) {
@@ -503,7 +507,7 @@ function renderRoutes() {
       <dl class="rc-where">
         <div><dt>Start</dt><dd>${esc(r.start.name)} · ${esc(r.start.transport)}${r.id === "cela" || r.id === "kolo" ? ` · <a href="${MSE}/kostely/sv-petra-na-porici" target="_blank" rel="noopener">mše u sv. Petra na Poříčí</a>` : ""}</dd></div>
         <div><dt>Cíl</dt><dd>${esc(r.end.name)}</dd></div>
-        <div><dt>Kaple</dt><dd>${r.chapels.length} zastavení, z toho ${standing} stojících kaplí a replik</dd></div>
+        <div><dt>Kaple</dt><dd>${r.chapels.length} zastavení, z toho ${standingText(standing)}</dd></div>
       </dl>
       <details class="rc-more">
         <summary>Praktické</summary>
@@ -660,13 +664,15 @@ function renderEventPill() {
   pill.hidden = false;
   pill.outerHTML = `<a class="event-pill" id="event-pill" href="#info"><b>${esc(ev.title)}</b> · program</a>`;
 }
+const isoToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 function renderInfo() {
+  const today = isoToday();
   $("#special-events").innerHTML = activeSpecials().map((ev) => `
     <section class="event-card">
-      <p class="eyebrow">Právě se chystá</p>
+      <p class="eyebrow">${today >= ev.startDate && today <= ev.endDate ? "Právě probíhá" : "Právě se chystá"}</p>
       <h2>${esc(ev.title)}</h2>
       <p class="ev-sub">${esc(ev.subtitle)}</p>
-      ${ev.days.map((d) => `<h4>${esc(d.day)}</h4><ul>${d.items.map(([t, txt, hl]) => `<li class="${hl ? "hl" : ""}"><b>${esc(t)}</b><span>${esc(txt)}</span></li>`).join("")}</ul>`).join("")}
+      ${ev.days.map((d) => `<h4${d.date === today ? ' class="is-today"' : ""}>${esc(d.day)}${d.date === today ? " · dnes" : ""}</h4><ul>${d.items.map(([t, txt, hl]) => `<li class="${hl ? "hl" : ""}"><b>${esc(t)}</b><span>${esc(txt)}</span></li>`).join("")}</ul>`).join("")}
       <p class="ev-note">${esc(ev.note)} <a href="${ev.source}" target="_blank" rel="noopener">Oficiální program ›</a></p>
     </section>`).join("");
 
@@ -676,7 +682,7 @@ function renderInfo() {
   $("#stages").innerHTML = STAGES.map((s) => {
     const cs = state.chapels.filter((c) => c.n >= s.chapels[0] && c.n <= s.chapels[1]);
     return `<li>
-      <div class="st-km">km ${s.from} – ${s.to}</div>
+      <div class="st-km">km ${numCs(s.from)} – ${numCs(s.to)}</div>
       <div class="st-title">${esc(s.title)}</div>
       <p class="st-text">${esc(s.text)}</p>
       <div class="st-chips">${cs.map((c) => `<a class="${c.status !== "zanikla" ? "stoji" : ""}" href="${chapelPath(c)}" data-n="${c.n}" title="${esc(c.name)} – ${STATUS_LABEL[c.status]}">${c.n}</a>`).join("")}</div>

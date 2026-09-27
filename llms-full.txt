@@ -69,7 +69,7 @@ URL: https://poutdoboleslavi.cz/trasy/cela/
 - Pozor: Seniorům a rodinám s dětmi doporučujeme rozdělit ji na dva dny: 1. den Praha → Vinoř (asi 15 km), 2. den Vinoř → Stará Boleslav (asi 11 km).
 - Občerstvení: Obchody a restaurace jsou v Karlíně, Libni, Vysočanech, Kbelích, Vinoři a Brandýse. V polních úsecích nic není, vezměte si s sebou vodu.
 - Zkrácení: Pouť můžete ukončit u metra B (Karlín, Libeň), u metra C Letňany, ve Vinoři (autobus PID, vlak Praha-Kbely) nebo v Brandýse (autobusy do Prahy).
-- Kaple na trase: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44
+- Kaple na trase: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44
 
 Historická trasa v celé délce, se všemi 44 zastaveními. První třetina vede městem přes Karlín, Libeň a Vysočany, kde se kaple většinou nedochovaly. Teprve za Klíčovem začínají pole a vesnice s řadou stojících kaplí. Celodenní pouť pro zdatné chodce.
 
@@ -84,7 +84,7 @@ URL: https://poutdoboleslavi.cz/trasy/letnany/
 - Pozor: S kočárkem jen s obtížemi: polní cesty mohou být po dešti blátivé a od Vinoře se jde podél silnice.
 - Občerstvení: Obchody a hospody v Kbelích, ve Vinoři a v Brandýse; mezi nimi polní úseky bez služeb.
 - Zkrácení: Z Kbel, Vinoře, Brandýsa i Staré Boleslavi jezdí do Prahy autobusy PID.
-- Kaple na trase: 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44
+- Kaple na trase: 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44
 
 Nejhezčí část Svaté cesty, bez městského úvodu. Od Letňan se jde po cyklostezce s alejí, která drží stopu staré cesty, a dál polní krajinou a vesnicemi kolem kaplí 14 až 42.
 
@@ -114,7 +114,7 @@ URL: https://poutdoboleslavi.cz/trasy/kolo/
 - Pozor: Na silniční kolo se moc nehodí. Část trasy vede po silnicích s provozem, s dětmi jeďte opatrně.
 - Občerstvení: Obchody a restaurace v Kbelích, ve Vinoři a v Brandýse.
 - Zkrácení: Veřejnou dopravou se můžete vrátit z Letňan, Kbel, Vinoře i Brandýsa. Přepravu kola si ověřte v pravidlech PID.
-- Kaple na trase: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44
+- Kaple na trase: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44
 
 Celá Svatá cesta na kole po cyklostezkách a silnicích. Tam, kde se po pěšině jet nedá, vede trasa jinudy. Letňany a Kbely projedete po nové cyklostezce A267. Každý rok 28. 9. pořádá svata-cesta.cz cyklopouť; termín a sraz si ověřte na jejich webu.
 

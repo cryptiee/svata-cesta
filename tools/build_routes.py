@@ -138,7 +138,13 @@ def chapels_on(line):
         d, along, _, _ = line.project(c["lat"], c["lon"])
         if d <= NEAR_M:
             hits.append((along, c["n"]))
-    return [n for _, n in sorted(hits)]
+    ns = [n for _, n in sorted(hits)]
+    # zaniklé kaple mají jen přibližnou polohu – leží-li mezi dvěma sousedy na trase, patří k ní také
+    on = set(ns)
+    gaps = [c["n"] for c in chapels if c["status"] == "zanikla" and c["n"] not in on and {c["n"] - 1, c["n"] + 1} <= on]
+    for g in gaps:
+        ns.insert(ns.index(g + 1), g)
+    return ns
 
 
 # ---------- varianty ----------
@@ -207,7 +213,7 @@ ROUTES = [
         "build": geom_letnany,
     },
     {
-        "id": "vinor", "short": "Z Vinoře", "name": "Kaple v polích (rodinná)", "mode": "pesky", "time": "3 h", "difficulty": "snadná",
+        "id": "vinor", "short": "Kaple v polích", "name": "Kaple v polích (rodinná)", "mode": "pesky", "time": "3 h", "difficulty": "snadná",
         "start": {"name": "Vinoř, Obergürgentálská kaple (č. 25)", "transport": "autobus PID (zastávka Vinořský zámek)"},
         "end": {"name": "Stará Boleslav, baziliky"},
         "text": "Krátká varianta s nejdelší řadou stojících kaplí: od Vinoře jich potkáte jedenáct. Cesta je rovinatá a nenáročná, zvládnou ji i rodiny s dětmi. Mezi Vinoří a Brandýsem ale vede podél silnice.",
