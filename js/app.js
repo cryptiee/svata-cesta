@@ -326,20 +326,32 @@ async function syncWakeLock() {
     toast("Displej se nepodařilo nechat rozsvícený. Zkontrolujte režim úspory baterie.");
   }
 }
+const IS_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+// vestavěné prohlížeče sociálních sítí a chatů polohu často vůbec nepředají
+const IN_APP = /FBAN|FBAV|FB_IAB|Instagram|Messenger|LinkedInApp|Snapchat|MicroMessenger|TikTok|musical_ly|Twitter|\bLine\//.test(navigator.userAgent);
 function geoDeniedHelp() {
   const ua = navigator.userAgent;
-  if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1))
+  if (IN_APP)
+    return "Stránka je otevřená uvnitř jiné aplikace, která polohu nepředává. Otevřete ji v Safari nebo Chrome (menu ⋯ → Otevřít v prohlížeči) a klepněte na tlačítko polohy znovu.";
+  if (IS_IOS)
     return /CriOS|FxiOS|EdgiOS/.test(ua)
       ? "Poloha je zakázaná. Otevřete Nastavení iPhonu → Aplikace → váš prohlížeč → Poloha → Při používání. Pak stránku obnovte a klepněte na tlačítko polohy znovu."
-      : "Poloha je zakázaná. Otevřete Nastavení iPhonu → Aplikace → Safari → Poloha → Zeptat se nebo Povolit (a v Soukromí → Polohové služby musí být zapnuté Weby Safari). Pak stránku obnovte a klepněte na tlačítko polohy znovu.";
+      : "Poloha je zakázaná. Otevřete Nastavení iPhonu → Soukromí a zabezpečení → Polohové služby: musí být zapnuté a u „Weby Safari“ nastaveno Při používání. Pak Nastavení → Aplikace → Safari → Poloha → Zeptat se. Stránku obnovte a klepněte na tlačítko polohy znovu.";
   if (/Android/.test(ua))
     return "Poloha je zakázaná. Klepněte na ikonu vlevo v adresním řádku → Oprávnění → Poloha → Povolit. Zkontrolujte také, že je v telefonu zapnutá Poloha.";
   return "Přístup k poloze je zakázaný. Povolte ho v nastavení webu (ikona vlevo v adresním řádku).";
+}
+function geoCoarseHelp(acc) {
+  const km = `±${fmtDist(acc)}`;
+  return IS_IOS
+    ? `Telefon posílá jen přibližnou polohu (${km}). Zapněte přesnou: Nastavení → Soukromí a zabezpečení → Polohové služby → Weby Safari (nebo váš prohlížeč) → Přesná poloha.`
+    : `Telefon posílá jen přibližnou polohu (${km}). Zapněte v nastavení telefonu přesnou polohu (GPS).`;
 }
 function stopLocate() {
   const btn = $("#btn-locate");
   navigator.geolocation.clearWatch(state.watchId);
   clearTimeout(state.geoSlowT);
+  clearInterval(state.geoTick);
   state.watchId = null;
   btn.classList.remove("is-on", "is-wait", "is-track");
   setFollow(false);
@@ -368,57 +380,92 @@ async function toggleLocate() {
 function startLocate() {
   if (!("geolocation" in navigator)) return toast("Tento prohlížeč neumí zjistit polohu.");
   if (!window.isSecureContext) return toast("Poloha funguje jen na zabezpečené adrese (https).");
-  const btn = $("#btn-locate");
-  btn.classList.add("is-wait");
-  let first = true;
-  const onFix = (pos) => {
-    if (state.watchId == null) return;
-    clearTimeout(state.geoSlowT);
-    btn.classList.remove("is-wait");
-    btn.classList.add("is-on");
-    if (first) {
-      store.set("vs-locate", true);
-      setFollow(true);
-      syncWakeLock();
-      if (!store.get("vs-follow-hint", false)) {
-        store.set("vs-follow-hint", true);
-        setTimeout(() => toast("Mapa vás sleduje. Posunutím mapy sledování vypnete, tlačítkem polohy ho zase zapnete."), 1200);
-      }
-    }
-    // hrubá poloha (Wi-Fi/síť) nepřepíše přesnější GPS
-    if (!first && pos.coords.accuracy > 500 && state.lastPos && state.lastPos.coords.accuracy < pos.coords.accuracy
-        && pos.timestamp - state.lastPos.timestamp < 30000) return;
-    onPosition(pos, first);
-    first = false;
-  };
-  const onErr = (err) => {
-    if (state.watchId == null) return;
-    if (err.code === 1) {
-      store.set("vs-locate", false);
-      stopLocate();
-      toast(geoDeniedHelp(), 9000);
-    } else if (first) {
-      // bez signálu watch běží dál – GPS se často chytí až po chvíli
-      toast("Polohu zatím nelze zjistit, stále hledám signál…");
-    }
-  };
-  // bez timeoutu: watch se po výpadku signálu sám obnoví, místo aby sledování skončilo
-  state.watchId = navigator.geolocation.watchPosition(onFix, onErr, { enableHighAccuracy: true, maximumAge: 5000 });
+  $("#btn-locate").classList.add("is-wait");
+  Object.assign(state, { geoFirst: true, geoStart: Date.now(), geoFixAt: 0, geoKickAt: 0, geoBest: Infinity, geoCoarseWarned: false });
+  watchGeo();
   // rychlá hrubá poloha, než naskočí GPS (zvlášť v zástavbě a na iPhonu trvá první GPS fix dlouho)
-  navigator.geolocation.getCurrentPosition((pos) => first && onFix(pos), () => {},
+  navigator.geolocation.getCurrentPosition((pos) => state.geoFirst && onGeoFix(pos), () => {},
     { enableHighAccuracy: false, maximumAge: 120000, timeout: 8000 });
   clearTimeout(state.geoSlowT);
-  state.geoSlowT = setTimeout(() => first && state.watchId != null && toast("Hledám polohu… Venku pod širým nebem to jde rychleji."), 12000);
+  state.geoSlowT = setTimeout(() => state.geoFirst && state.watchId != null && toast("Hledám polohu… Venku pod širým nebem to jde rychleji."), 12000);
+  clearInterval(state.geoTick);
+  state.geoTick = setInterval(geoWatchdog, 10000);
+}
+// (Znovu) zaregistruje watchPosition. Bez timeoutu: po výpadku signálu se watch sám obnoví.
+function watchGeo() {
+  if (state.watchId != null) navigator.geolocation.clearWatch(state.watchId);
+  state.watchId = navigator.geolocation.watchPosition(onGeoFix, onGeoErr, { enableHighAccuracy: true, maximumAge: 5000 });
+}
+// iOS Safari občas sledování tiše zastaví (po zhasnutí displeje, přepnutí aplikace, někdy i hned
+// po udělení oprávnění) – watch pak žije, ale nic nehlásí. Když poloha dlouho nepřišla, zaregistruj ho znovu.
+function geoWatchdog() {
+  if (state.watchId == null || document.visibilityState !== "visible") return;
+  // před první polohou jen s jistě uděleným oprávněním – nový dotaz by mohl zrušit otevřenou žádost iOS
+  const allowed = state.geoFixAt || state.geoPerm === "granted";
+  if (allowed && Date.now() - Math.max(state.geoFixAt || state.geoStart, state.geoKickAt || 0) > 30000) {
+    state.geoKickAt = Date.now();
+    watchGeo();
+  }
+  if (!state.geoCoarseWarned && Date.now() - state.geoStart > 45000 && state.geoBest > 1000 && state.geoBest < Infinity) {
+    state.geoCoarseWarned = true;
+    toast(geoCoarseHelp(state.geoBest), 10000);
+  }
+}
+function resumeGeo() {
+  if (state.watchId == null || !(state.geoFixAt || state.geoPerm === "granted")) return;
+  state.geoKickAt = Date.now(); // dej obnovenému watchi čas, než ho hlídač znovu restartuje
+  watchGeo();
+}
+function onGeoFix(pos) {
+  if (state.watchId == null) return;
+  const btn = $("#btn-locate");
+  const first = state.geoFirst;
+  clearTimeout(state.geoSlowT);
+  state.geoFixAt = Date.now();
+  state.geoBest = Math.min(state.geoBest, pos.coords.accuracy);
+  btn.classList.remove("is-wait");
+  btn.classList.add("is-on");
+  if (first) {
+    store.set("vs-locate", true);
+    setFollow(true);
+    syncWakeLock();
+    if (!store.get("vs-follow-hint", false)) {
+      store.set("vs-follow-hint", true);
+      setTimeout(() => toast("Mapa vás sleduje. Posunutím mapy sledování vypnete, tlačítkem polohy ho zase zapnete."), 1200);
+    }
+  }
+  // hrubá poloha (Wi-Fi/síť) nepřepíše přesnější GPS
+  if (!first && pos.coords.accuracy > 500 && state.lastPos && state.lastPos.coords.accuracy < pos.coords.accuracy
+      && pos.timestamp - state.lastPos.timestamp < 30000) return;
+  onPosition(pos, first);
+  state.geoFirst = false;
+}
+function onGeoErr(err) {
+  if (state.watchId == null) return;
+  if (err.code === 1) {
+    store.set("vs-locate", false);
+    stopLocate();
+    toast(geoDeniedHelp(), 12000);
+  } else if (state.geoFirst) {
+    // bez signálu watch běží dál – GPS se často chytí až po chvíli
+    toast(IN_APP ? geoDeniedHelp() : "Polohu zatím nelze zjistit, stále hledám signál…", IN_APP ? 12000 : 3200);
+  }
 }
 // Obnoví polohu po znovuotevření stránky (bez dotazu – jen když je oprávnění už udělené)
 // a zareaguje, když poutník oprávnění mezitím změní v nastavení.
 async function initLocatePermission() {
-  if (!("geolocation" in navigator) || !navigator.permissions) return;
+  if (!("geolocation" in navigator)) return;
+  // po návratu do prohlížeče (zhasnutý displej, jiná aplikace, obnovení z cache) sledování nastartuj znovu
+  document.addEventListener("visibilitychange", () => document.visibilityState === "visible" && resumeGeo());
+  window.addEventListener("pageshow", (e) => e.persisted && resumeGeo());
+  if (!navigator.permissions) return;
   let status;
   try { status = await navigator.permissions.query({ name: "geolocation" }); } catch { return; }
+  state.geoPerm = status.state;
   if (status.state === "granted" && store.get("vs-locate", false) && state.watchId == null) startLocate();
   status.addEventListener?.("change", () => {
-    if (status.state === "denied" && state.watchId != null) { stopLocate(); toast(geoDeniedHelp(), 9000); }
+    state.geoPerm = status.state;
+    if (status.state === "denied" && state.watchId != null) { stopLocate(); toast(geoDeniedHelp(), 12000); }
   });
 }
 function onPosition(pos, first) {

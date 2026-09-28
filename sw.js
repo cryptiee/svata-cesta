@@ -1,8 +1,10 @@
 /* Service worker – offline průvodce.
-   Aplikace a data: stale-while-revalidate. Mapové dlaždice: cache při prohlížení (omezený počet).
+   Aplikace a data: nejdřív síť (opravy se k poutníkům dostanou hned), při výpadku nebo slabém signálu
+   (déle než NET_WAIT) uložená kopie. Knihovny z CDN: stale-while-revalidate. Mapové dlaždice: cache při prohlížení (omezený počet).
    Statické stránky (kaple/, trasy/ … z tools/build_pages.py) se nepředukládají – uloží se při první
    návštěvě a offline pak fungují; nenavštívená stránka offline ukáže odkaz na průvodce. */
-const VERSION = "v15";
+const VERSION = "v16";
+const NET_WAIT = 3000;
 const APP = `svata-cesta-app-${VERSION}`;
 const TILES = "svata-cesta-tiles";
 const MAX_TILES = 1500;
@@ -10,7 +12,7 @@ const MAX_TILES = 1500;
 const SHELL = [
   "./", "index.html", "css/app.css", "js/app.js",
   "data/chapels.json", "data/route.geojson", "data/prayers.json", "data/events.json", "data/photos.json",
-  "data/routes.json", ...["cela", "letnany", "vinor", "kolo", "prosek"].map((id) => `data/routes/${id}.geojson`),
+  "data/routes.json", ...["cela", "letnany", "vinor", "kolo", "prosek", "polni"].map((id) => `data/routes/${id}.geojson`),
   "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png",
   "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css",
   "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js",
@@ -20,7 +22,8 @@ const PHOTOS = ["4", "12", "14", "15", "17", "19", "23", "24", "25", "26", "26b"
 self.addEventListener("install", (e) => {
   e.waitUntil((async () => {
     const c = await caches.open(APP);
-    await c.addAll(SHELL);
+    // cache: "reload" – neber soubory z HTTP cache prohlížeče (GitHub Pages: max-age 600), mohly by být staré
+    await c.addAll(SHELL.map((u) => new Request(u, { cache: "reload" })));
     // fotky best-effort, ať instalace nespadne kvůli jedné
     await Promise.allSettled(PHOTOS.map((u) => c.add(u)));
     self.skipWaiting();
@@ -66,13 +69,17 @@ self.addEventListener("fetch", (e) => {
 
   e.respondWith((async () => {
     const c = await caches.open(APP);
-    const hit = await c.match(req, { ignoreSearch: sameOrigin });
     const net = fetch(req).then((res) => {
       if (res.ok) c.put(req, res.clone());
       return res;
     }).catch(() => null);
-    if (hit) { e.waitUntil(net); return hit; }
-    const res = await net;
+    const hit = c.match(req, { ignoreSearch: sameOrigin });
+    // CDN (verzované, neměnné soubory): rovnou z cache
+    let res = sameOrigin ? await Promise.race([net, new Promise((r) => setTimeout(() => r("wait"), NET_WAIT))]) : "wait";
+    if (res && res !== "wait") return res;
+    const cached = await hit;
+    if (cached) { e.waitUntil(net); return cached; }
+    res = res === "wait" ? await net : null;
     if (res) return res;
     if (req.mode === "navigate") return offlineFallback(c, url);
     return new Response("", { status: 504 });
