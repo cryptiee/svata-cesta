@@ -36,6 +36,9 @@ SITE_TAGLINE = "Praha → Stará Boleslav"
 PUBLISHER_NAME = "Mše v Praze"
 PUBLISHER_URL = "https://www.msevpraze.cz/"
 PUBLISHER_EMAIL = "info@msevpraze.cz"
+# Návštěvnost: Umami na stats.msevpraze.cz (bez cookies). Prázdné UMAMI_ID = měření vypnuto.
+UMAMI_SRC = "https://stats.msevpraze.cz/script.js"
+UMAMI_ID = "2b642b41-804b-40ea-93e4-1a896a0c4646"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TODAY = datetime.date.today()
@@ -222,6 +225,8 @@ WEBSITE = {"@type": "WebSite", "@id": SITE_URL + "#website", "url": SITE_URL, "n
            "alternateName": [f"{SITE_NAME} {SITE_TAGLINE}", "Pouť do Staré Boleslavi", "Via Sancta", EN_NAME],
            "inLanguage": "cs", "publisher": {"@id": ORG_ID}}
 TRAIL = {"@type": "Place", "name": "Svatá cesta z Prahy do Staré Boleslavi", "alternateName": ["Via Sancta", EN_NAME], "url": SITE_URL}
+UMAMI = (f'<script defer src="{UMAMI_SRC}" data-website-id="{UMAMI_ID}" '
+         f'data-domains="{SITE_URL.split("/")[2]}"></script>') if UMAMI_ID else ""
 ROBOTS_META = '<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">'
 
 
@@ -321,7 +326,7 @@ def render(path, *, title, desc, body, section=None, crumbs=None, ld=(), og_img=
 <link rel="apple-touch-icon" href="{prefix}icons/apple-touch-icon.png">
 {chr(10).join(HEAD_LINES)}
 <link rel="stylesheet" href="{prefix}css/app.css">
-{ld_script(graph) if graph else ""}
+{ld_script(graph) if graph else ""}{chr(10) + UMAMI if UMAMI else ""}
 </head>
 <body class="sp">
 {GENERATED}
@@ -1038,7 +1043,7 @@ def home_head():
                 {"@type": "ListItem", "position": c["n"], "item": chapel_ld_ref(c)} for c in chapels]},
             "subTrip": [{"@type": "TouristTrip", "name": r["name"], "url": SITE_URL + f'trasy/{r["id"]}/'} for r in routes]}
     meta = head_meta(title, desc, SITE_URL, *OG_DEFAULT)
-    new = f"{meta}\n{ld_script([WEBSITE, ORG, trip])}\n"
+    new = f"{meta}\n{ld_script([WEBSITE, ORG, trip])}\n" + (UMAMI + "\n" if UMAMI else "")
     global INDEX
     start, end = "<!-- build:head", "<!-- /build:head -->"
     i = INDEX.index("\n", INDEX.index(start)) + 1

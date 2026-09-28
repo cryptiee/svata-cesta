@@ -104,6 +104,8 @@ async function init() {
   initSheet();
   route_();
   window.addEventListener("hashchange", route_);
+  // Umami sám zachytí jen pushState/replaceState, přepnutí pohledu přes #hash hlásíme ručně
+  window.addEventListener("hashchange", () => window.umami?.track());
   registerSW();
 }
 
