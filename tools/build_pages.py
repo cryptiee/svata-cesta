@@ -894,7 +894,7 @@ def pout_page():
 <ul class="links">{route_items}</ul>
 <h2 class="sp-h">Na cestu</h2>
 <ul>
-<li><strong>Za tmy podél silnice:</strong> kdo jde na ranní mši z&nbsp;Prahy, prochází úsek Vinoř – Brandýs ještě za šera. Cesta vede z&nbsp;velké části podél silnice, jděte proti směru jízdy a&nbsp;vezměte si reflexní vestu a&nbsp;čelovku.</li>
+<li><strong>Za tmy podél silnice:</strong> kdo jde na ranní mši z&nbsp;Prahy, prochází úsek Vinoř – Brandýs ještě za šera. Cesta vede z&nbsp;velké části podél silnice, jděte proti směru jízdy a&nbsp;vezměte si reflexní vestu a&nbsp;čelovku. Za světla se silnici můžete vyhnout polní cestou z&nbsp;Podolanky přes Cvrčovice a&nbsp;Popovice (<a href="{prefix}trasy/polni/">Z Vinoře polní cestou mimo silnici</a>), vynecháte ale kaple 31 až 41.</li>
 <li><strong>Voda a jídlo:</strong> v&nbsp;polních úsecích nic není, obchody jsou v&nbsp;Kbelích, ve Vinoři a&nbsp;v&nbsp;Brandýse.</li>
 <li><strong>Zpět do Prahy:</strong> ze Staré Boleslavi a&nbsp;Brandýsa jezdí autobusy PID (např. na Černý Most nebo do Letňan). Po poutní mši bývají plné, počítejte s&nbsp;čekáním. Spojení najdete na <a href="https://pid.cz" target="_blank" rel="noopener">pid.cz</a> nebo <a href="https://idos.cz" target="_blank" rel="noopener">idos.cz</a>.</li>
 </ul>

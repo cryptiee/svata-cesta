@@ -6,6 +6,9 @@ Varianty:
   vinor    – hlavní trasa od kaple 25 ve Vinoři
   kolo     – cyklotrasa přes vybrané kaple (OSRM, profil bike)
   prosek   – starší svatováclavská cesta z Proseka (OSRM, profil foot)
+  polni    – od kaple 25 ve Vinoři po hlavní trasě do Podolanky (kaple 30), pak polní cestou
+             přes Cvrčovice a Popovice mimo silnici (OSRM, profil foot); úsek mimo hlavní trasu
+             se jako „branch“ ukazuje čárkovaně i na trasách, ze kterých odbočuje
 
 Délka (km) a seznam kaplí na trase (do 150 m) se počítají z geometrie, celkové stoupání
 (elevation, m) z výšek Open-Meteo. Texty, obtížnost (effort 1–3) a „pro koho“ jsou níže v ROUTES.
@@ -31,6 +34,9 @@ NEAR_M = 150
 START = (50.09079, 14.437006)          # Poříčská brána (nám. Republiky)
 BAZILIKA = (50.194591, 14.67228)       # Bazilika sv. Václava
 LETNANY_METRO = (50.1264, 14.5162)
+# polní odbočka z Podolanky: Cvrčovice, roh polní cesty západně od nich, Popovice
+FIELD = [(50.1655, 14.6065), (50.1705, 14.6012), (50.1785, 14.6237)]
+BRANCH_ON = ["cela", "letnany", "vinor"]  # trasy, na kterých se odbočka ukáže
 
 
 def ch(n):
@@ -68,12 +74,20 @@ class Line:
                 best = (d, self.cum[i] + t * math.sqrt(L2), i, t)
         return best
 
+    def point(self, i, t):
+        (x1, y1), (x2, y2) = self.coords[i], self.coords[i + 1]
+        return [x1 + t * (x2 - x1), y1 + t * (y2 - y1)]
+
     def slice_from(self, lat, lon):
         """Část trasy od bodu nejblíž (lat, lon) do konce."""
         _, _, i, t = self.project(lat, lon)
-        (x1, y1), (x2, y2) = self.coords[i], self.coords[i + 1]
-        first = [x1 + t * (x2 - x1), y1 + t * (y2 - y1)]
-        return [first] + self.coords[i + 1:]
+        return [self.point(i, t)] + self.coords[i + 1:]
+
+    def slice_between(self, a, b):
+        """Část trasy mezi body nejblíž a = (lat, lon) a b = (lat, lon)."""
+        _, _, i, t = self.project(*a)
+        _, _, j, u = self.project(*b)
+        return [self.point(i, t)] + self.coords[i + 1:j + 1] + [self.point(j, u)]
 
 
 def rnd(coords):
@@ -183,6 +197,18 @@ def geom_prosek():
     return osrm("foot", pts)
 
 
+def geom_polni():
+    head = main_line.slice_between(ch(25), ch(30))
+    tail = osrm("foot", [ch(30), *FIELD, BAZILIKA])
+    return head + tail[1:]
+
+
+def branch(coords, off_m=40):
+    """Indexy prvního a posledního bodu úseku, který vede mimo hlavní trasu (dál než off_m)."""
+    off = [i for i, (lon, lat) in enumerate(coords) if main_line.project(lat, lon)[0] > off_m]
+    return max(0, off[0] - 1), min(len(coords) - 1, off[-1] + 1)
+
+
 ROUTES = [
     {
         "id": "cela", "short": "Celá cesta", "name": "Celá Svatá cesta", "mode": "pesky", "time": "6–7 h", "difficulty": "náročná",
@@ -220,7 +246,7 @@ ROUTES = [
         "highlights": ["11 stojících kaplí za sebou", "nápis Rosa Mystica v kapli č. 26", "rovinatá cesta, vhodná pro děti"],
         "effort": 1,
         "suitableFor": ["senioři", "rodiny s dětmi", "běžný chodec", "kočárky (opatrně)"],
-        "notFor": "S kočárkem a malými dětmi opatrně – úseky podél silnice nemají všude chodník.",
+        "notFor": "S kočárkem a malými dětmi opatrně – úseky podél silnice nemají všude chodník. Silnici se vyhnete variantou Mimo silnici, přijdete ale o kaple 31 až 41.",
         "surface": "téměř rovina; polní a zpevněné cesty, velká část podél silnice",
         "breaks": "Obchody a restaurace jsou ve Vinoři na startu a v Brandýse, mezi nimi jen kaple a pole. Vezměte si vodu a svačinu.",
         "bailout": "Zkrátit můžete v Brandýse, odkud jezdí autobusy PID do Prahy.",
@@ -254,6 +280,21 @@ ROUTES = [
         "bailout": "Zkrátit můžete u metra C Letňany nebo v obcích po cestě, kam zajíždějí autobusy PID. Z Brandýsa jezdí autobusy do Prahy.",
         "build": geom_prosek,
     },
+    {
+        "id": "polni", "short": "Mimo silnici", "name": "Z Vinoře polní cestou mimo silnici", "mode": "pesky", "time": "3–3½ h", "difficulty": "snadná",
+        "start": {"name": "Vinoř, Obergürgentálská kaple (č. 25)", "transport": "autobus PID (zastávka Vinořský zámek)"},
+        "end": {"name": "Stará Boleslav, baziliky"},
+        "text": "Pro ty, kdo nechtějí jít podél silnice. Od Vinoře vede po Svaté cestě kolem kaplí 25 až 30, v Podolance z ní odbočí a pokračuje polní cestou západně od Cvrčovic do Popovic a dál do Brandýsa. Kaple mezi Podolankou a Brandýsem vynecháte, zato půjdete tichou krajinou polí bez aut. Ke Svaté cestě se vrátíte v Brandýse u Vyšehradské kaple (č. 42).",
+        "highlights": ["kaple 25 až 30 ve Vinoři a Podolance", "polní cesta přes Cvrčovice a Popovice, bez aut", "Vyšehradská kaple v Brandýse", "Brandýs a přechod přes Labe"],
+        "effort": 1,
+        "suitableFor": ["běžný chodec", "senioři", "rodiny s dětmi", "kdo nechce jít podél silnice"],
+        "notFor": "Nevede kolem kaplí 31 až 41 – kdo chce projít všechna zastavení, musí jít podél silnice. Po dešti bývá polní cesta blátivá, s kočárkem jen s obtížemi.",
+        "surface": "ve Vinoři a Podolance ulice a zpevněné cesty, pak nezpevněná polní cesta přes Cvrčovice do Popovic; Brandýsem ulicemi",
+        "breaks": "Obchody a restaurace jsou ve Vinoři na startu a v Brandýse. Mezi nimi služby skoro nejsou, vezměte si vodu.",
+        "bailout": "V Podolance staví autobusy PID. Z Brandýsa a Staré Boleslavi jezdí autobusy do Prahy.",
+        "branchText": "Polní cesta mimo silnici přes Cvrčovice a Popovice. Vynechává kaple 31 až 41, v Brandýse se ke Svaté cestě vrací u kaple č. 42.",
+        "build": geom_polni,
+    },
 ]
 
 
@@ -278,14 +319,17 @@ def main_():
             "geometry": {"type": "LineString", "coordinates": coords},
         }
         path.write_text(json.dumps(feat, ensure_ascii=False, separators=(",", ":")) + "\n")
-        entry = {k: v for k, v in r.items() if k != "build"}
+        entry = {k: v for k, v in r.items() if k not in ("build", "branchText")}
         entry["km"] = round(line.length / 1000, 1)
         entry["chapels"] = chapels_on(line)
         entry["file"] = f"data/routes/{r['id']}.geojson"
+        if r.get("branchText"):
+            a, b = branch(coords)
+            entry["branch"] = {"routes": BRANCH_ON, "start": a, "end": b, "text": r["branchText"]}
         # pořadí klíčů pro čitelnost
         entry["elevation"] = ascent(coords, prev.get(r["id"], {}).get("elevation"))
         keys = ["id", "name", "short", "mode", "km", "time", "difficulty", "effort", "elevation", "suitableFor", "notFor",
-                "surface", "start", "end", "text", "highlights", "breaks", "bailout", "chapels", "file"]
+                "surface", "start", "end", "text", "highlights", "breaks", "bailout", "chapels", "file", "branch"]
         out.append({k: entry[k] for k in keys if entry.get(k) is not None})
         print(f"{r['id']:8} {entry['km']:5.1f} km  ↑{entry['elevation']} m  {len(coords):5} bodů  kaple {entry['chapels']}")
 

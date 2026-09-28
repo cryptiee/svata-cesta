@@ -25,7 +25,7 @@ const STAGES = [
   { from: 4.5, to: 8, chapels: [9, 13], title: "Vysočany – Klíčov", text: "Přes Rokytku do Vysočan a ulicemi Pod Krocínkou a Ke Klíčovu do kopce. Nahoře stojí první kaple v polích (č. 12)." },
   { from: 8, to: 12.5, chapels: [14, 21], title: "Letňany – Kbely", text: "Nejlépe obnovený úsek: cyklostezka s alejí po stopě staré cesty, kaple 14, 15 a 17 a čtyři nové repliky v Kbelích. Tady se dobře začíná zkrácená pouť (metro C Letňany)." },
   { from: 12.5, to: 17.5, chapels: [22, 29], title: "Vinoř", text: "Polní cestou ke kaplím 23 a 24, pak přes Vinoř kolem kaple s nápisem Rosa Mystica (č. 26) až ke Svatokřížské kapli u rybníka." },
-  { from: 17.5, to: 22, chapels: [30, 38], title: "Podolanka – Dřevčice", text: "Nejdelší řada dochovaných kaplí (30, 32, 33, 35, 36 a 38) v otevřené krajině polí. Cesta vede podél silnice, jděte opatrně." },
+  { from: 17.5, to: 22, chapels: [30, 38], title: "Podolanka – Dřevčice", text: "Nejdelší řada dochovaných kaplí (30, 32, 33, 35, 36 a 38) v otevřené krajině polí. Cesta vede podél silnice, jděte opatrně. Kdo se jí chce vyhnout, může z Podolanky jít polní cestou přes Cvrčovice a Popovice (na mapě čárkovaně); kaple 31 až 41 tím vynechá." },
   { from: 22, to: 26, chapels: [39, 44], title: "Vrábí – Brandýs – Stará Boleslav", text: "Brandýsem kolem kaplí 41 a 42, přes Masarykovo náměstí, pod zámkem přes Labe a do Staré Boleslavi k oběma bazilikám." },
 ];
 
@@ -540,6 +540,29 @@ async function setRoute(id) {
   $("#route-chip-name").textContent = r.short || r.name;
   if (state.lastPos) onPosition(state.lastPos, false);
   renderRoutes();
+  drawBranches().catch(() => {});
+}
+// Odbočky jiných variant (routes.json → branch), např. polní cesta mimo silnici: na trasách,
+// ze kterých odbočují, se ukážou čárkovaně a klepnutím nabídnou přepnutí na variantu.
+async function drawBranches() {
+  const id = state.routeId;
+  const layer = (state.branchLayer ||= L.layerGroup().addTo(state.map));
+  const lines = [];
+  for (const r of state.routes.filter((x) => x.branch?.routes.includes(id))) {
+    const coords = (await routeCoords(r.id)).slice(r.branch.start, r.branch.end + 1);
+    lines.push([r, coords.map(([lon, lat]) => [lat, lon])]);
+  }
+  if (id !== state.routeId) return; // mezitím se vybrala jiná trasa
+  layer.clearLayers();
+  const color = getComputedStyle(document.documentElement).getPropertyValue("--route").trim() || "#7a1f2b";
+  lines.forEach(([r, ll]) => {
+    const popup = `<strong class="pop-title">${esc(r.short)}</strong><span class="pop-text">${esc(r.branch.text)}</span>
+      <a class="pop-link" href="#trasa-${r.id}">Vybrat tuto variantu (${fmtKm(r.km)}) ›</a>`;
+    L.polyline(ll, { color: "#fff", weight: 7, opacity: isDark() ? 0.12 : 0.8, interactive: false }).addTo(layer);
+    L.polyline(ll, { color, weight: 4, opacity: 0.8, dashArray: "2 9", lineCap: "round", interactive: false }).addTo(layer);
+    // široká neviditelná čára, aby šla odbočka trefit prstem
+    L.polyline(ll, { weight: 22, opacity: 0, className: "branch-hit" }).bindPopup(popup).addTo(layer);
+  });
 }
 async function selectRoute(id) {
   try { await setRoute(id); } catch { return toast("Trasu se nepodařilo načíst."); }

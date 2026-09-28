@@ -5,7 +5,7 @@ Průvodce poutníka po **Svaté cestě (Via Sancta)** z Prahy do Staré Boleslav
 **🌐 Web: [poutdoboleslavi.cz](https://poutdoboleslavi.cz/)**
 
 - 🗺️ mapa s pěší trasou (≈ 26 km) a všemi 44 kaplemi: stojícími, replikami i zaniklými
-- 🥾 doporučené varianty tras: zkrácené pěší, rodinná, cyklopouť a svatováclavská cesta z Proseka
+- 🥾 doporučené varianty tras: zkrácené pěší, rodinná, polní cesta mimo silnici, cyklopouť a svatováclavská cesta z Proseka
 - 📍 „Kde jsem“: další zastavení, vzdálenost, ušlé km a automatické odškrtávání navštívených kaplí
 - 🙏 modlitby na cestu; ke každé kapli její invokace loretánské litanie
 - 📜 historie cesty a každé kaple, donátoři, mariánská poutní místa
@@ -32,7 +32,7 @@ a otevřít <http://localhost:8321>. Service worker se na localhostu nezapíná 
 | `data/photos.json` | fotografie a jejich autoři/licence |
 | `data/route.geojson` | pěší trasa |
 | `data/routes.json` | doporučené varianty tras (záložka Trasy) – texty, obtížnost, pro koho, km, stoupání, kaple na trase |
-| `data/routes/<id>.geojson` | geometrie jednotlivých variant (`cela` = kopie `route.geojson`) |
+| `data/routes/<id>.geojson` | geometrie jednotlivých variant (`cela` = kopie `route.geojson`); varianta s `branch` (polní cesta mimo silnici) se na trasách z `branch.routes` ukazuje jako čárkovaná odbočka |
 | `tools/build_routes.py` | generátor variant: trasy přes OSRM, km, stoupání (Open-Meteo) a kaple do 150 m; texty variant se upravují přímo v něm |
 | `tools/build_pages.py` | generátor statických stránek pro vyhledávače (SEO) – viz níže |
 
@@ -53,7 +53,7 @@ Aplikace přepíná pohledy přes `#hash`, vyhledávače ji tedy vidí jako jedi
 | Adresa | Obsah |
 | --- | --- |
 | `kaple/`, `kaple/<n>-<slug>/` | přehled a 44 stránek kaplí (např. `kaple/26-pakenska-kaple/`) |
-| `trasy/`, `trasy/<id>/` | přehled a 5 variant tras |
+| `trasy/`, `trasy/<id>/` | přehled a 6 variant tras |
 | `modlitby/`, `modlitby/<slug>/`, `modlitby/loretanska-litanie/` | všechny modlitby, každá modlitba zvlášť, litanie s odkazy na kaple |
 | `historie/`, `info/` | text z `index.html` (značky `<!-- build:historie -->`, `<!-- build:info -->`) |
 | `svatovaclavska-pout/` | Národní svatováclavská pouť – kalendář + aktuální program z `events.json` |

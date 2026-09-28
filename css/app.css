@@ -472,6 +472,8 @@ a.chapel-row { color: inherit; text-decoration: none; }
 .pop-mass { display: grid; gap: 3px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 13.5px; }
 .pop-mass a { color: var(--accent); font-weight: 600; }
 .pop-mass small { color: var(--muted); font-size: 12px; }
+.branch-hit:focus { outline: none; }
+.pop-link { display: block; margin-top: 8px; color: var(--accent); font-weight: 600; font-size: 13.5px; }
 .leaflet-popup-content-wrapper { background: var(--card); color: var(--ink); border-radius: 12px; }
 .leaflet-popup-tip { background: var(--card); }
 

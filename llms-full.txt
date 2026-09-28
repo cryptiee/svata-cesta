@@ -1,6 +1,6 @@
 # Svatá cesta z Prahy do Staré Boleslavi (Via Sancta)
 
-> Průvodce poutníka po Svaté cestě (Via Sancta), barokní poutní cestě z Prahy do Staré Boleslavi. Asi 26 km od Poříčské brány k bazilikám ve Staré Boleslavi, 44 výklenkových kaplí z let 1674–1680 (17 stojí, 5 replik, 22 zaniklých), interaktivní mapa, 5 tras pěšky i na kole, modlitby, loretánská litanie, historie a kalendář poutí.
+> Průvodce poutníka po Svaté cestě (Via Sancta), barokní poutní cestě z Prahy do Staré Boleslavi. Asi 26 km od Poříčské brány k bazilikám ve Staré Boleslavi, 44 výklenkových kaplí z let 1674–1680 (17 stojí, 5 replik, 22 zaniklých), interaktivní mapa, 6 tras pěšky i na kole, modlitby, loretánská litanie, historie a kalendář poutí.
 
 English: https://poutdoboleslavi.cz/ is a free Czech-language pilgrim guide to the Holy Way (Via Sancta), a Baroque pilgrimage route (~26 km) from Prague to Stará Boleslav, where St. Wenceslas was martyred and the Palladium of Bohemia is kept. It covers all 44 wayside chapels built by the Jesuits in 1674–1680 (one for each invocation of the Litany of Loreto), walking and cycling routes, prayers, history and the National St. Wenceslas Pilgrimage (28 September).
 
@@ -26,7 +26,7 @@ Z 44 kaplí dnes stojí 17, dalších 5 nahradily repliky a 22 zaniklo. Na míst
 
 ### Existuje kratší varianta Svaté cesty?
 
-Ano. Z Letňan polní cestou: 18,6 km, 4½–5 h, start Letňany. Kaple v polích (rodinná): 11,5 km, 3 h, start Vinoř, Obergürgentálská kaple (č. 25). Svatováclavská cesta z Proseka: 19,4 km, 5–5½ h, start Kostel sv. Václava na Proseku.
+Ano. Z Letňan polní cestou: 18,6 km, 4½–5 h, start Letňany. Kaple v polích (rodinná): 11,5 km, 3 h, start Vinoř, Obergürgentálská kaple (č. 25). Svatováclavská cesta z Proseka: 19,4 km, 5–5½ h, start Kostel sv. Václava na Proseku. Z Vinoře polní cestou mimo silnici: 12,2 km, 3–3½ h, start Vinoř, Obergürgentálská kaple (č. 25).
 
 ### Dá se Svatá cesta projet na kole?
 
@@ -96,7 +96,7 @@ URL: https://poutdoboleslavi.cz/trasy/vinor/
 - Start: Vinoř, Obergürgentálská kaple (č. 25) (autobus PID (zastávka Vinořský zámek)); cíl: Stará Boleslav, baziliky
 - Pro koho: senioři, rodiny s dětmi, běžný chodec, kočárky (opatrně)
 - Povrch: téměř rovina; polní a zpevněné cesty, velká část podél silnice
-- Pozor: S kočárkem a malými dětmi opatrně – úseky podél silnice nemají všude chodník.
+- Pozor: S kočárkem a malými dětmi opatrně – úseky podél silnice nemají všude chodník. Silnici se vyhnete variantou Mimo silnici, přijdete ale o kaple 31 až 41.
 - Občerstvení: Obchody a restaurace jsou ve Vinoři na startu a v Brandýse, mezi nimi jen kaple a pole. Vezměte si vodu a svačinu.
 - Zkrácení: Zkrátit můžete v Brandýse, odkud jezdí autobusy PID do Prahy.
 - Kaple na trase: 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44
@@ -132,6 +132,21 @@ URL: https://poutdoboleslavi.cz/trasy/prosek/
 - Kaple na trase: 42, 43, 44
 
 Starší, severnější varianta: středověká svatováclavská cesta, jak ji popisuje Miroslav Kuranda. Začíná u kostela sv. Václava na Proseku, jednoho z nejstarších v Praze. Podle tradice stojí v místě, kde roku 938 odpočíval průvod s Václavovým tělem. Barokních kaplí je tu málo, zato je cesta tišší. Vede polními cestami přes Přezletice a Popovice do Brandýsa a potkáte na ní několik křížků.
+
+### Z Vinoře polní cestou mimo silnici
+
+URL: https://poutdoboleslavi.cz/trasy/polni/
+
+- Délka: 12,2 km, čas: 3–3½ h, pěšky, obtížnost: snadná, stoupání 40 m
+- Start: Vinoř, Obergürgentálská kaple (č. 25) (autobus PID (zastávka Vinořský zámek)); cíl: Stará Boleslav, baziliky
+- Pro koho: běžný chodec, senioři, rodiny s dětmi, kdo nechce jít podél silnice
+- Povrch: ve Vinoři a Podolance ulice a zpevněné cesty, pak nezpevněná polní cesta přes Cvrčovice do Popovic; Brandýsem ulicemi
+- Pozor: Nevede kolem kaplí 31 až 41 – kdo chce projít všechna zastavení, musí jít podél silnice. Po dešti bývá polní cesta blátivá, s kočárkem jen s obtížemi.
+- Občerstvení: Obchody a restaurace jsou ve Vinoři na startu a v Brandýse. Mezi nimi služby skoro nejsou, vezměte si vodu.
+- Zkrácení: V Podolance staví autobusy PID. Z Brandýsa a Staré Boleslavi jezdí autobusy do Prahy.
+- Kaple na trase: 25, 26, 27, 28, 29, 30, 42, 43, 44
+
+Pro ty, kdo nechtějí jít podél silnice. Od Vinoře vede po Svaté cestě kolem kaplí 25 až 30, v Podolance z ní odbočí a pokračuje polní cestou západně od Cvrčovic do Popovic a dál do Brandýsa. Kaple mezi Podolankou a Brandýsem vynecháte, zato půjdete tichou krajinou polí bez aut. Ke Svaté cestě se vrátíte v Brandýse u Vyšehradské kaple (č. 42).
 
 ## Kaple
 
@@ -671,14 +686,14 @@ Text vychází z práce badatelů a nadšenců, kteří cestu zmapovali před n�
 - km 4,5–8, Vysočany – Klíčov (kaple 9–13): Přes Rokytku do Vysočan a ulicemi Pod Krocínkou a Ke Klíčovu do kopce. Nahoře stojí první kaple v polích (č. 12).
 - km 8–12,5, Letňany – Kbely (kaple 14–21): Nejlépe obnovený úsek: cyklostezka s alejí po stopě staré cesty, kaple 14, 15 a 17 a čtyři nové repliky v Kbelích. Tady se dobře začíná zkrácená pouť (metro C Letňany).
 - km 12,5–17,5, Vinoř (kaple 22–29): Polní cestou ke kaplím 23 a 24, pak přes Vinoř kolem kaple s nápisem Rosa Mystica (č. 26) až ke Svatokřížské kapli u rybníka.
-- km 17,5–22, Podolanka – Dřevčice (kaple 30–38): Nejdelší řada dochovaných kaplí (30, 32, 33, 35, 36 a 38) v otevřené krajině polí. Cesta vede podél silnice, jděte opatrně.
+- km 17,5–22, Podolanka – Dřevčice (kaple 30–38): Nejdelší řada dochovaných kaplí (30, 32, 33, 35, 36 a 38) v otevřené krajině polí. Cesta vede podél silnice, jděte opatrně. Kdo se jí chce vyhnout, může z Podolanky jít polní cestou přes Cvrčovice a Popovice (na mapě čárkovaně); kaple 31 až 41 tím vynechá.
 - km 22–26, Vrábí – Brandýs – Stará Boleslav (kaple 39–44): Brandýsem kolem kaplí 41 a 42, přes Masarykovo náměstí, pod zámkem přes Labe a do Staré Boleslavi k oběma bazilikám.
 
 ### Tipy na cestu
 
 - **Zkrácená pouť:** nejhezčí část začíná u metra C Letňany (km 8). Odtud je to do Staré Boleslavi asi 18 km polní krajinou a vesnicemi. Ještě kratší je cesta z Vinoře (km 15, autobus i vlak Praha-Kbely), odkud zbývá asi 11 km. [Všechny varianty tras ›](https://poutdoboleslavi.cz/trasy/)
 
-- **Úsek Vinoř – Brandýs** vede z velké části podél silnice. Jděte proti směru jízdy a za šera mějte reflexní prvky.
+- **Úsek Vinoř – Brandýs** vede z velké části podél silnice. Jděte proti směru jízdy a za šera mějte reflexní prvky. Silnici se můžete vyhnout polní cestou z Podolanky přes Cvrčovice a Popovice ([varianta Mimo silnici](#trasa-polni)), vynecháte ale kaple 31 až 41.
 
 - **Voda a jídlo:** obchody a hospody najdete hlavně v Kbelích, ve Vinoři a v Brandýse. V polních úsecích nic není, vezměte si s sebou vodu.
 

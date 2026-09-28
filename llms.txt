@@ -1,6 +1,6 @@
 # Svatá cesta z Prahy do Staré Boleslavi (Via Sancta)
 
-> Průvodce poutníka po Svaté cestě (Via Sancta), barokní poutní cestě z Prahy do Staré Boleslavi. Asi 26 km od Poříčské brány k bazilikám ve Staré Boleslavi, 44 výklenkových kaplí z let 1674–1680 (17 stojí, 5 replik, 22 zaniklých), interaktivní mapa, 5 tras pěšky i na kole, modlitby, loretánská litanie, historie a kalendář poutí.
+> Průvodce poutníka po Svaté cestě (Via Sancta), barokní poutní cestě z Prahy do Staré Boleslavi. Asi 26 km od Poříčské brány k bazilikám ve Staré Boleslavi, 44 výklenkových kaplí z let 1674–1680 (17 stojí, 5 replik, 22 zaniklých), interaktivní mapa, 6 tras pěšky i na kole, modlitby, loretánská litanie, historie a kalendář poutí.
 
 English: https://poutdoboleslavi.cz/ is a free Czech-language pilgrim guide to the Holy Way (Via Sancta), a Baroque pilgrimage route (~26 km) from Prague to Stará Boleslav, where St. Wenceslas was martyred and the Palladium of Bohemia is kept. It covers all 44 wayside chapels built by the Jesuits in 1674–1680 (one for each invocation of the Litany of Loreto), walking and cycling routes, prayers, history and the National St. Wenceslas Pilgrimage (28 September).
 
@@ -10,7 +10,7 @@ Web provozuje Mše v Praze (https://www.msevpraze.cz/), kontakt info@msevpraze.c
 
 - [Interaktivní mapa](https://poutdoboleslavi.cz/): mapa trasy a všech 44 kaplí, navigace „Kde jsem“
 - [Časté otázky](https://poutdoboleslavi.cz/otazky/): délka, začátek a konec, kratší trasy, kolo, doprava zpět
-- [Trasy](https://poutdoboleslavi.cz/trasy/): Celá Svatá cesta (26,0 km), Z Letňan polní cestou (18,6 km), Kaple v polích (rodinná) (11,5 km), Cyklopouť (23,9 km), Svatováclavská cesta z Proseka (19,4 km)
+- [Trasy](https://poutdoboleslavi.cz/trasy/): Celá Svatá cesta (26,0 km), Z Letňan polní cestou (18,6 km), Kaple v polích (rodinná) (11,5 km), Cyklopouť (23,9 km), Svatováclavská cesta z Proseka (19,4 km), Z Vinoře polní cestou mimo silnici (12,2 km)
 - [Kaple](https://poutdoboleslavi.cz/kaple/): přehled všech 44 zastavení po úsecích
 - [Historie](https://poutdoboleslavi.cz/historie/): sv. Václav, Palladium země české, jezuité, zánik a obnova kaplí
 - [Praktické informace](https://poutdoboleslavi.cz/info/): úseky cesty, tipy, doprava, kalendář poutí, zdroje
@@ -25,6 +25,7 @@ Web provozuje Mše v Praze (https://www.msevpraze.cz/), kontakt info@msevpraze.c
 - [Kaple v polích (rodinná)](https://poutdoboleslavi.cz/trasy/vinor/): Kaple v polích (rodinná): 11,5 km, 3 h, pěšky, obtížnost snadná. 20 zastavení Svaté cesty do Staré Boleslavi.
 - [Cyklopouť](https://poutdoboleslavi.cz/trasy/kolo/): Cyklopouť: 23,9 km, 2–2½ h, na kole, obtížnost střední. 43 zastavení Svaté cesty do Staré Boleslavi.
 - [Svatováclavská cesta z Proseka](https://poutdoboleslavi.cz/trasy/prosek/): Svatováclavská cesta z Proseka: 19,4 km, 5–5½ h, pěšky, obtížnost střední. 3 zastavení Svaté cesty do Staré Boleslavi.
+- [Z Vinoře polní cestou mimo silnici](https://poutdoboleslavi.cz/trasy/polni/): Z Vinoře polní cestou mimo silnici: 12,2 km, 3–3½ h, pěšky, obtížnost snadná. 9 zastavení Svaté cesty do Staré Boleslavi.
 
 ## Kaple
 
