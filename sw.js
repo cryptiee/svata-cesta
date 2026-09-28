@@ -3,7 +3,7 @@
    (déle než NET_WAIT) uložená kopie. Knihovny z CDN: stale-while-revalidate. Mapové dlaždice: cache při prohlížení (omezený počet).
    Statické stránky (kaple/, trasy/ … z tools/build_pages.py) se nepředukládají – uloží se při první
    návštěvě a offline pak fungují; nenavštívená stránka offline ukáže odkaz na průvodce. */
-const VERSION = "v16";
+const VERSION = "v17";
 const NET_WAIT = 3000;
 const APP = `svata-cesta-app-${VERSION}`;
 const TILES = "svata-cesta-tiles";
